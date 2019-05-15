@@ -1,5 +1,7 @@
 package com.example.blabla;
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,9 +36,18 @@ class TextProjectAdapter extends ListAdapter<TextProject, TextProjectViewHolder>
 
     @Override
     public void onBindViewHolder(@NonNull TextProjectViewHolder holder, int position) {
-        TextProject item = getItem(position);
+        final TextProject item = getItem(position);
         holder.title.setText(item.getTextTitle());
         holder.creationDate.setText(item.getCreationDate().toDate().toString());
-    }
 
+        final Context context = holder.title.getContext();
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, PlayTextActivity.class);
+                intent.putExtra(PlayTextActivity.CURRENT_TEXTPROJECT, item);
+                context.startActivity(intent);
+            }
+        });
+    }
 }

@@ -1,4 +1,33 @@
 <resources>
     <string name="app_name">BlaBla</string>
     <string name="action_settings">Settings</string>
+    <string name="play_text_name">Play</string>
+    <string name="settings_name">Settings</string>
+    <string name="action_log_out">Log out</string>
+    <string name="preview">Preview:</string>
+    <string name="title_text_color">Text:</string>
+    <string name="title_background_color">Background:</string>
+    <string name="title_text_size">Text size:</string>
+    <string name="title_scrolling_speed">Scrolling speed:</string>
+    <string name="title_mirror_mode">Mirror mode:</string>
+    <string name="title_color_picker">Pick a color!</string>
+    <string name="select">Select</string>
+    <string name="cancel">Cancel</string>
+    <string name="test">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Magna fermentum iaculis eu non. Augue lacus viverra vitae congue eu consequat ac felis donec. A scelerisque purus semper eget duis at tellus. Varius duis at consectetur lorem donec massa sapien faucibus. Purus sit amet volutpat consequat mauris nunc. Pulvinar pellentesque habitant morbi tristique senectus et netus. In nisl nisi scelerisque eu ultrices vitae auctor. Risus quis varius quam quisque id diam. Urna condimentum mattis pellentesque id nibh tortor id aliquet. Nisl suscipit adipiscing bibendum est ultricies integer quis auctor elit. Lectus proin nibh nisl condimentum. In nulla posuere sollicitudin aliquam ultrices sagittis orci. Etiam tempor orci eu lobortis. Sit amet consectetur adipiscing elit ut.
+
+Pellentesque habitant morbi tristique senectus et netus et. Pellentesque diam volutpat commodo sed egestas egestas fringilla. A pellentesque sit amet porttitor eget. Sodales ut etiam sit amet nisl purus in mollis nunc. Donec ac odio tempor orci. Scelerisque eleifend donec pretium vulputate. Mollis aliquam ut porttitor leo a. Viverra vitae congue eu consequat ac. Velit euismod in pellentesque massa placerat duis ultricies lacus sed. Et ligula ullamcorper malesuada proin libero nunc consequat interdum varius. Suspendisse potenti nullam ac tortor vitae purus. Aliquam id diam maecenas ultricies mi. Lorem donec massa sapien faucibus et molestie ac feugiat. Lacinia at quis risus sed vulputate odio ut. Enim ut sem viverra aliquet eget. Posuere ac ut consequat semper. Ultricies integer quis auctor elit sed vulputate.
+
+Nam libero justo laoreet sit amet. Vitae aliquet nec ullamcorper sit amet. Lectus proin nibh nisl condimentum id. Fames ac turpis egestas maecenas pharetra convallis posuere morbi leo. Arcu non odio euismod lacinia at quis risus sed vulputate. Lorem mollis aliquam ut porttitor. Mauris sit amet massa vitae tortor. Faucibus nisl tincidunt eget nullam non nisi est. Ac auctor augue mauris augue neque gravida in fermentum et. Congue nisi vitae suscipit tellus mauris a diam maecenas. Fames ac turpis egestas sed tempus urna et pharetra pharetra. Nulla facilisi nullam vehicula ipsum a arcu cursus vitae congue. Senectus et netus et malesuada fames ac turpis egestas. Porttitor eget dolor morbi non arcu risus quis varius. Nulla malesuada pellentesque elit eget.
+
+Mus mauris vitae ultricies leo integer. Lectus vestibulum mattis ullamcorper velit sed ullamcorper morbi. Pharetra massa massa ultricies mi. Massa tincidunt nunc pulvinar sapien. Egestas sed tempus urna et pharetra pharetra massa massa. Etiam dignissim diam quis enim lobortis. Enim blandit volutpat maecenas volutpat blandit aliquam etiam erat. Scelerisque in dictum non consectetur a erat nam. Neque vitae tempus quam pellentesque nec nam aliquam. Morbi non arcu risus quis varius quam quisque id diam. Tempus iaculis urna id volutpat lacus. Commodo quis imperdiet massa tincidunt nunc pulvinar.
+
+Pellentesque habitant morbi tristique senectus. Massa sed elementum tempus egestas sed sed risus pretium quam. Ultrices in iaculis nunc sed augue lacus viverra. Libero justo laoreet sit amet. Ullamcorper malesuada proin libero nunc. Eu augue ut lectus arcu bibendum at varius vel pharetra. Et magnis dis parturient montes nascetur. Condimentum mattis pellentesque id nibh. Massa sed elementum tempus egestas sed sed. Amet facilisis magna etiam tempor orci eu lobortis. Nisi quis eleifend quam adipiscing. Sodales neque sodales ut etiam sit amet. Elit scelerisque mauris pellentesque pulvinar pellentesque habitant morbi tristique. Nisl nunc mi ipsum faucibus vitae aliquet nec. Pellentesque habitant morbi tristique senectus et netus. Velit ut tortor pretium viverra. Tortor aliquam nulla facilisi cras fermentum odio eu feugiat. Tempus urna et pharetra pharetra massa massa ultricies mi quis.</string>
+    <string name="save">Save</string>
+    <string name="preference_background_color">preference_background_color</string>
+    <string name="default_background">#FFFFFF</string>
+    <string name="preference_text_color">preference_text_color</string>
+    <string name="default_text_color">#000000</string>
+    <string name="preference_text_size">preference_text_size</string>
+    <string name="preference_scroll_speed">preference_scroll_speed</string>
+    <string name="preference_mirror_mode">preference_mirror_mode</string>
 </resources>
