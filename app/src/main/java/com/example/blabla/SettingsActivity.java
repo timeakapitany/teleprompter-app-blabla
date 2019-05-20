@@ -90,35 +90,19 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
-        seekbarTextSize.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        seekbarTextSize.setOnSeekBarChangeListener(new SimpleSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 previewText.setTextSize(getTextSizeByProgress(progress));
                 textProject.setTextSize(progress);
             }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
         });
 
-        seekbarScrollingSpeed.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        seekbarScrollingSpeed.setOnSeekBarChangeListener(new SimpleSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 scrollSpeedDelay = MAX - progress;
                 textProject.setScrollSpeed(progress);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
             }
         });
 

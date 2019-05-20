@@ -133,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new GridLayoutManager(this,1));
         textProjectAdapter = new TextProjectAdapter();
         recyclerView.setAdapter(textProjectAdapter);
+//        TODO: get real data
         textProjectAdapter.submitList(getMockList(100));
     }
 
@@ -144,6 +145,11 @@ public class MainActivity extends AppCompatActivity {
             textProject.setTextId(i + "");
             textProject.setTextTitle("Test Text" + i);
             textProject.setCreationDate(new Timestamp(new Date()));
+            textProject.setScrollSpeed(0);
+            textProject.setMirrorMode(true);
+            textProject.setTextSize(5);
+            textProject.setTextColor("#75a478");
+            textProject.setBackgroundColor("#ffa06d");
             list.add(textProject);
         }
         return list;
