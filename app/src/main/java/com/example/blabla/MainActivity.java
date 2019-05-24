@@ -7,11 +7,16 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
 
+import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.auth.AuthUI;
@@ -106,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void userSignIn(){
+    private void userSignIn() {
         List<AuthUI.IdpConfig> providers = Arrays.asList(
                 new AuthUI.IdpConfig.EmailBuilder().build(),
                 new AuthUI.IdpConfig.GoogleBuilder().build());
@@ -130,11 +135,42 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupRecyclerView() {
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new GridLayoutManager(this,1));
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 1));
+        DividerItemDecoration decorator = new DividerItemDecoration(this, LinearLayout.VERTICAL);
+        decorator.setDrawable(ContextCompat.getDrawable(this, R.drawable.divider));
+        recyclerView.addItemDecoration(decorator);
         textProjectAdapter = new TextProjectAdapter();
+        textProjectAdapter.setOnTextProjectClickListener((textProject, view, position) -> {
+            BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(R.menu.menu_bottom_sheet);
+            bottomSheetDialog.setOnClickListener(v -> {
+                handleBottomSheetMenuClick(textProject, v.getId(), position);
+                bottomSheetDialog.dismiss();
+            });
+            bottomSheetDialog.show(this.getSupportFragmentManager(), null);
+        });
         recyclerView.setAdapter(textProjectAdapter);
 //        TODO: get real data
         textProjectAdapter.submitList(getMockList(100));
+
+        ItemTouchHelper itemTouchHelper = new
+                ItemTouchHelper(new SwipeToEditDeleteCallback(textProjectAdapter, recyclerView));
+        itemTouchHelper.attachToRecyclerView(recyclerView);
+    }
+
+    private void handleBottomSheetMenuClick(TextProject textProject, @IdRes int id, int position) {
+        Intent intent;
+        switch (id) {
+            case R.id.action_play:
+                intent = PlayTextActivity.newIntent(this, textProject);
+                this.startActivity(intent);
+                break;
+            case R.id.action_edit:
+                intent = SettingsActivity.newIntent(this, textProject);
+                this.startActivity(intent);
+                break;
+            case R.id.action_delete:
+                textProjectAdapter.deleteItem(position);
+        }
     }
 
     private List<TextProject> getMockList(int size) {
@@ -165,4 +201,6 @@ public class MainActivity extends AppCompatActivity {
         dummy.setMirrorMode(sharedPreferences.getBoolean(getString(R.string.preference_mirror_mode), getResources().getBoolean(R.bool.default_mirror)));
         return dummy;
     }
+
+
 }

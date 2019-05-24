@@ -4,6 +4,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="?selectableItemBackground"
     android:padding="@dimen/spacing_default">
 
     <TextView
@@ -12,12 +13,22 @@
         android:layout_height="wrap_content"
         android:lines="1"
         android:textAlignment="viewStart"
+        android:padding="@dimen/spacing_default"
         tools:text="This is the title of the text" />
 
     <TextView
         android:id="@+id/creationDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAlignment="viewEnd"
+        android:padding="@dimen/spacing_default"
+        android:textAlignment="viewStart"
         tools:text="04.06.2019" />
+
+    <ImageView
+        android:id="@+id/more"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:clickable="true"
+        android:src="@drawable/ic_more_horiz" />
 </LinearLayout>

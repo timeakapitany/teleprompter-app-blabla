@@ -30,4 +30,9 @@ Pellentesque habitant morbi tristique senectus. Massa sed elementum tempus egest
     <string name="preference_text_size">preference_text_size</string>
     <string name="preference_scroll_speed">preference_scroll_speed</string>
     <string name="preference_mirror_mode">preference_mirror_mode</string>
+    <string name="snackbar_undo_delete">Undo</string>
+    <string name="snackbar">1 item deleted</string>
+    <string name="action_play">Play</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_delete">Delete</string>
 </resources>

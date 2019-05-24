@@ -10,7 +10,18 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 
+
 class TextProjectAdapter extends ListAdapter<TextProject, TextProjectViewHolder> {
+
+    private int deletedItemPosition;
+    private TextProject deletedItem;
+    private OnTextProjectClickListener onTextProjectClickListener;
+
+    public void setOnTextProjectClickListener(OnTextProjectClickListener onTextProjectClickListener) {
+        this.onTextProjectClickListener = onTextProjectClickListener;
+    }
+
+
 
     protected TextProjectAdapter() {
         super(new DiffUtil.ItemCallback<TextProject>() {
@@ -39,14 +50,37 @@ class TextProjectAdapter extends ListAdapter<TextProject, TextProjectViewHolder>
         final TextProject item = getItem(position);
         holder.title.setText(item.getTextTitle());
         holder.creationDate.setText(item.getCreationDate().toDate().toString());
-
         final Context context = holder.title.getContext();
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = PlayTextActivity.newIntent(context, item);
+            context.startActivity(intent);
+        });
+
+        holder.itemView.findViewById(R.id.more).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = PlayTextActivity.newIntent(context, item);
-                context.startActivity(intent);
+                onTextProjectClickListener.onTextProjectClicked(item, v, holder.getAdapterPosition());
             }
         });
+
     }
+
+    public void deleteItem(int position) {
+        deletedItemPosition = position;
+        deletedItem = getItem(position);
+        //TODO: remove from text list
+        notifyItemRemoved(position);
+    }
+
+
+    public void undoDeleteItem() {
+        //TODO: add item back to list
+        notifyItemInserted(deletedItemPosition);
+    }
+
+    public TextProject getTextProject(int position) {
+        return getItem(position);
+    }
+
+
 }
