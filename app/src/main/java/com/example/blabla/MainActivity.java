@@ -112,8 +112,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void userSignIn() {
         List<AuthUI.IdpConfig> providers = Arrays.asList(
-                new AuthUI.IdpConfig.EmailBuilder().build(),
-                new AuthUI.IdpConfig.GoogleBuilder().build());
+                new AuthUI.IdpConfig.EmailBuilder().build());
 
 
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {

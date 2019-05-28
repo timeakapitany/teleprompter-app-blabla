@@ -1,19 +1,35 @@
 package com.example.blabla;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URLDecoder;
+import java.util.Date;
+import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -21,7 +37,7 @@ import butterknife.ButterKnife;
 public class CreateTextActivity extends AppCompatActivity {
 
     private static final int BROWSE_REQUEST = 2;
-
+    SharedPreferences sharedPreferences;
 
     @BindView(R.id.button_browse)
     Button browseButton;
@@ -40,6 +56,9 @@ public class CreateTextActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_createtext);
         ButterKnife.bind(this);
+        sharedPreferences = getSharedPreferences("blabla", Context.MODE_PRIVATE);
+
+        ;
 
         browseButton.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -52,6 +71,71 @@ public class CreateTextActivity extends AppCompatActivity {
             textTitle.setText("");
             textBody.setText("");
         });
+
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveToFirebaseStorage();
+            }
+        });
+
+    }
+
+    private void saveToFirebaseStorage() {
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageRef = storage.getReference();
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String textID = UUID.randomUUID().toString();
+        StorageReference textRef = storageRef.child(userId).child(textID);
+        byte[] data = textBody.getText().toString().getBytes();
+        UploadTask uploadTask = textRef.putBytes(data);
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d("Failed", "onFailure: ");
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                Log.d("Success", "onSuccess: ");
+                saveToFirebaseFirestore(textID, userId);
+            }
+        });
+    }
+
+    private void saveToFirebaseFirestore(String textID, String userId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        String documentId = UUID.randomUUID().toString();
+
+        TextProject textProject = new TextProject();
+        textProject.setTextId(documentId);
+        textProject.setTextTitle(textTitle.getText().toString());
+        textProject.setTextReference(textID);
+        textProject.setCreationDate(new Timestamp(new Date()));
+        textProject.setBackgroundColor(sharedPreferences.getString(getString(R.string.preference_background_color), getString(R.string.default_background)));
+        textProject.setTextColor(sharedPreferences.getString(getString(R.string.preference_text_color), getString(R.string.default_text_color)));
+        textProject.setTextSize(sharedPreferences.getInt(getString(R.string.preference_text_size), getResources().getInteger(R.integer.default_text_size)));
+        textProject.setScrollSpeed(sharedPreferences.getInt(getString(R.string.preference_scroll_speed), getResources().getInteger(R.integer.default_scroll_speed)));
+        textProject.setMirrorMode(sharedPreferences.getBoolean(getString(R.string.preference_mirror_mode), getResources().getBoolean(R.bool.default_mirror)));
+
+        db.collection("users")
+                .document(userId)
+                .collection("textprojects")
+                .document(documentId)
+                .set(textProject)
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d("Failure", "onFailure: ");
+                    }
+                })
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("Success", "onSuccess: ");
+                        finish();
+                    }
+                });
 
     }
 
