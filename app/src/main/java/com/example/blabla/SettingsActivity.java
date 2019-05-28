@@ -75,6 +75,7 @@ public class SettingsActivity extends AppCompatActivity {
         switchMirror.setChecked(textProject.getMirrorMode());
         setMirrorMode(previewText, textProject.getMirrorMode());
         seekbarScrollingSpeed.setProgress(textProject.getScrollSpeed());
+        scrollSpeedDelay = MAX - textProject.getScrollSpeed();
 
 
         runnable = () -> {
