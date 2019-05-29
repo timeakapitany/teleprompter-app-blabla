@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,6 +26,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,8 +39,11 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private static final int RC_SIGN_IN = 11;
+    private static final String TAG = "tag";
     private TextProjectAdapter textProjectAdapter;
     SharedPreferences sharedPreferences;
+    private ListenerRegistration registration;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +68,16 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(getApplicationContext(), CreateTextActivity.class);
                 startActivity(intent);
+            }
+        });
+
+
+        FirebaseAuth.getInstance().addAuthStateListener(new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                if (firebaseAuth.getCurrentUser() == null) {
+                    registration.remove();
+                }
             }
         });
     }
@@ -147,9 +165,7 @@ public class MainActivity extends AppCompatActivity {
             bottomSheetDialog.show(this.getSupportFragmentManager(), null);
         });
         recyclerView.setAdapter(textProjectAdapter);
-//        TODO: get real data
-        textProjectAdapter.submitList(getMockList(100));
-
+        listenDatabaseChanges();
         ItemTouchHelper itemTouchHelper = new
                 ItemTouchHelper(new SwipeToEditDeleteCallback(textProjectAdapter, recyclerView));
         itemTouchHelper.attachToRecyclerView(recyclerView);
@@ -198,6 +214,34 @@ public class MainActivity extends AppCompatActivity {
         dummy.setScrollSpeed(sharedPreferences.getInt(getString(R.string.preference_scroll_speed), getResources().getInteger(R.integer.default_scroll_speed)));
         dummy.setMirrorMode(sharedPreferences.getBoolean(getString(R.string.preference_mirror_mode), getResources().getBoolean(R.bool.default_mirror)));
         return dummy;
+    }
+
+
+    private void listenDatabaseChanges() {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        final Query collectionReference = db.collection("users").document(userId).collection("textprojects").orderBy("creationDate", Query.Direction.DESCENDING);
+
+        registration = collectionReference.addSnapshotListener((queryDocumentSnapshots, e) -> {
+            List<TextProject> list = new ArrayList<>();
+            if (e != null) {
+                Log.w(TAG, "Listen failed.", e);
+                return;
+            }
+
+            if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
+                Log.d(TAG, "Data exists ");
+                for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                    list.add(document.toObject(TextProject.class));
+                }
+                textProjectAdapter.submitList(list);
+
+            } else {
+                Log.d(TAG, "Current data: null");
+            }
+
+        });
+
     }
 
 

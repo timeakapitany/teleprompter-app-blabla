@@ -21,6 +21,10 @@ import androidx.appcompat.widget.SwitchCompat;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.skydoves.colorpickerview.ColorPickerDialog;
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
 
@@ -33,6 +37,7 @@ public class PlayTextActivity extends AppCompatActivity {
     public static final int MAX = 30;
     private static final int SIZE = 14;
     SharedPreferences sharedPreferences;
+
     @BindView(R.id.scrollview_play_text)
     ScrollView scrollView;
     @BindView(R.id.switch_mirror_mode)
@@ -81,7 +86,7 @@ public class PlayTextActivity extends AppCompatActivity {
 
     @SuppressLint("ClickableViewAccessibility")
     private void setupUI(TextProject textProject) {
-        playText.setText(populateText(textProject));
+        populateText(textProject);
         playText.setTextSize(getTextSizeByProgress(textProject.getTextSize()));
         seekbarTextSize.setProgress(textProject.getTextSize());
         scrollView.setVerticalScrollbarPosition(model.scrollPosition * scrollView.getHeight());
@@ -228,13 +233,22 @@ public class PlayTextActivity extends AppCompatActivity {
         }
     }
 
-    private String populateText(TextProject textProject) {
+    private void populateText(TextProject textProject) {
         String id = textProject.getTextId();
-        if (id == null) {
-            return "TEXT HERE";
+        if (id != null) {
+            FirebaseStorage storage = FirebaseStorage.getInstance();
+            StorageReference storageRef = storage.getReference();
+            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            StorageReference textRef = storageRef.child(userId).child(textProject.getTextReference());
+            textRef.getBytes(1024 * 1024).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                @Override
+                public void onSuccess(byte[] bytes) {
+                    String text = new String(bytes);
+                    playText.setText(text);
+                }
+            });
         } else {
-//            TODO: populate from Firebase;
-            return getString(R.string.test);
+            playText.setText("");
         }
     }
 

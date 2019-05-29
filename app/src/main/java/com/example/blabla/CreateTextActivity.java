@@ -41,6 +41,9 @@ public class CreateTextActivity extends AppCompatActivity {
 
     private static final int BROWSE_REQUEST = 2;
     SharedPreferences sharedPreferences;
+    private FirebaseStorage storage = FirebaseStorage.getInstance();
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
     @BindView(R.id.button_browse)
     Button browseButton;
@@ -113,7 +116,6 @@ public class CreateTextActivity extends AppCompatActivity {
     }
 
     private void saveToFirebaseStorage() {
-        FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference();
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         String textID = UUID.randomUUID().toString();
@@ -138,7 +140,6 @@ public class CreateTextActivity extends AppCompatActivity {
     }
 
     private void saveToFirebaseFirestore(String textID, String userId) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
         String documentId = UUID.randomUUID().toString();
 
         TextProject textProject = new TextProject();

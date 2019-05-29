@@ -9,7 +9,7 @@
     <ScrollView
         android:id="@+id/scrollview_play_text"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
         <TextView
             android:id="@+id/play_text"
@@ -19,7 +19,6 @@
             android:paddingTop="@dimen/spacing_extra"
             android:paddingEnd="@dimen/spacing_default"
             android:paddingBottom="@dimen/spacing_extra"
-            android:text="@string/test"
             tools:text="@tools:sample/lorem/random" />
     </ScrollView>
 
