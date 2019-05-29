@@ -7,15 +7,18 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.widget.ContentLoadingProgressBar;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -49,7 +52,12 @@ public class CreateTextActivity extends AppCompatActivity {
     EditText textBody;
     @BindView(R.id.title)
     EditText textTitle;
-
+    @BindView(R.id.progress_bar_save)
+    ContentLoadingProgressBar progressBar;
+    @BindView(R.id.title_layout)
+    TextInputLayout titleInput;
+    @BindView(R.id.body_layout)
+    TextInputLayout bodyInput;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -75,7 +83,30 @@ public class CreateTextActivity extends AppCompatActivity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveToFirebaseStorage();
+                if (validateText(titleInput) && validateText(bodyInput)) {
+                    progressBar.show();
+                    getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                    saveToFirebaseStorage();
+                }
+            }
+        });
+
+        textTitle.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    validateText(titleInput);
+                }
+            }
+        });
+
+        textBody.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    validateText(bodyInput);
+                }
             }
         });
 
@@ -93,12 +124,15 @@ public class CreateTextActivity extends AppCompatActivity {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Log.d("Failed", "onFailure: ");
+                progressBar.hide();
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
             }
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 Log.d("Success", "onSuccess: ");
                 saveToFirebaseFirestore(textID, userId);
+                progressBar.hide();
             }
         });
     }
@@ -166,5 +200,16 @@ public class CreateTextActivity extends AppCompatActivity {
         }
         inputStream.close();
         return stringBuilder.toString();
+    }
+
+    private Boolean validateText(TextInputLayout textInput) {
+        String text = textInput.getEditText().getText().toString().trim();
+        if (text.isEmpty()) {
+            textInput.setError("Field cannot be empty");
+            return false;
+        } else {
+            textInput.setError(null);
+            return true;
+        }
     }
 }
