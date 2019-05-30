@@ -8,35 +8,29 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.ListAdapter;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
-class TextProjectAdapter extends ListAdapter<TextProject, TextProjectViewHolder> {
+class TextProjectAdapter extends RecyclerView.Adapter<TextProjectViewHolder> {
 
     private int deletedItemPosition;
     private TextProject deletedItem;
     private OnTextProjectClickListener onTextProjectClickListener;
+    private List<TextProject> items = new ArrayList<>();
 
     public void setOnTextProjectClickListener(OnTextProjectClickListener onTextProjectClickListener) {
         this.onTextProjectClickListener = onTextProjectClickListener;
     }
 
-
-
-    protected TextProjectAdapter() {
-        super(new DiffUtil.ItemCallback<TextProject>() {
-            @Override
-            public boolean areItemsTheSame(@NonNull TextProject oldItem, @NonNull TextProject newItem) {
-                return (oldItem.getTextId().equals(newItem.getTextId()));
-            }
-
-            @Override
-            public boolean areContentsTheSame(@NonNull TextProject oldItem, @NonNull TextProject newItem) {
-                return (oldItem.getTextTitle().equals(newItem.getTextTitle()) &&
-                        oldItem.getCreationDate().equals(newItem.getCreationDate()));
-            }
-        });
+    public TextProject getDeletedItem() {
+        return deletedItem;
     }
+
+
+
 
     @NonNull
     @Override
@@ -65,16 +59,25 @@ class TextProjectAdapter extends ListAdapter<TextProject, TextProjectViewHolder>
 
     }
 
+    private TextProject getItem(int position) {
+        return items.get(position);
+    }
+
+    @Override
+    public int getItemCount() {
+        return items.size();
+    }
+
     public void deleteItem(int position) {
         deletedItemPosition = position;
         deletedItem = getItem(position);
-        //TODO: remove from text list
+        items.remove(position);
         notifyItemRemoved(position);
     }
 
 
     public void undoDeleteItem() {
-        //TODO: add item back to list
+        items.add(deletedItemPosition, deletedItem);
         notifyItemInserted(deletedItemPosition);
     }
 
@@ -82,5 +85,9 @@ class TextProjectAdapter extends ListAdapter<TextProject, TextProjectViewHolder>
         return getItem(position);
     }
 
-
+    public void updateList(List<TextProject> newList) {
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new TextProjectDiffCallback(items, newList));
+        items = newList;
+        diffResult.dispatchUpdatesTo(this);
+    }
 }

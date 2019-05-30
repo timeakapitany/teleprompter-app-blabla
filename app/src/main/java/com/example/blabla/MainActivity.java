@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int RC_SIGN_IN = 11;
     private static final String TAG = "tag";
+    private final FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
     private TextProjectAdapter textProjectAdapter;
     SharedPreferences sharedPreferences;
     private ListenerRegistration registration;
@@ -51,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         sharedPreferences = getSharedPreferences("blabla", Context.MODE_PRIVATE);
-        FirebaseAuth.getInstance().addAuthStateListener(new FirebaseAuth.AuthStateListener() {
+        firebaseAuth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 userSignIn();
@@ -69,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        FirebaseAuth.getInstance().addAuthStateListener(new FirebaseAuth.AuthStateListener() {
+        firebaseAuth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 if (firebaseAuth.getCurrentUser() == null) {
@@ -116,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
             IdpResponse response = IdpResponse.fromResultIntent(data);
 
             if (resultCode == RESULT_OK) {
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                FirebaseUser user = firebaseAuth.getCurrentUser();
                 getSharedPreferences("blabla", Context.MODE_PRIVATE).edit().putString("UserId", user.getUid()).apply();
             } else {
                 //TODO
@@ -130,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
                 new AuthUI.IdpConfig.EmailBuilder().build());
 
 
-        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+        if (firebaseAuth.getCurrentUser() == null) {
             startActivityForResult(
                     AuthUI.getInstance()
                             .createSignInIntentBuilder()
@@ -142,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void userSignOut() {
-        FirebaseAuth.getInstance().signOut();
+        firebaseAuth.signOut();
     }
 
 
@@ -215,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void listenDatabaseChanges() {
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String userId = firebaseAuth.getCurrentUser().getUid();
 
         final Query collectionReference = db.collection("users").document(userId).collection("textprojects").orderBy("creationDate", Query.Direction.DESCENDING);
 
@@ -231,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
                 for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                     list.add(document.toObject(TextProject.class));
                 }
-                textProjectAdapter.submitList(list);
+                textProjectAdapter.updateList(list);
 
             } else {
                 Log.d(TAG, "Current data: null");
