@@ -21,7 +21,6 @@ import androidx.appcompat.widget.SwitchCompat;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.ViewModelProviders;
 
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -240,12 +239,9 @@ public class PlayTextActivity extends AppCompatActivity {
             StorageReference storageRef = storage.getReference();
             String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
             StorageReference textRef = storageRef.child(userId).child(textProject.getTextReference());
-            textRef.getBytes(1024 * 1024).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-                @Override
-                public void onSuccess(byte[] bytes) {
-                    String text = new String(bytes);
-                    playText.setText(text);
-                }
+            textRef.getBytes(1024 * 1024).addOnSuccessListener(bytes -> {
+                String text = new String(bytes);
+                playText.setText(text);
             });
         } else {
             playText.setText("");

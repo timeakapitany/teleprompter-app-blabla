@@ -69,7 +69,7 @@ public class CreateTextActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         sharedPreferences = getSharedPreferences("blabla", Context.MODE_PRIVATE);
 
-        ;
+
 
         browseButton.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -129,13 +129,10 @@ public class CreateTextActivity extends AppCompatActivity {
                 progressBar.hide();
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
             }
-        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                Log.d("Success", "onSuccess: ");
-                saveToFirebaseFirestore(textID, userId);
-                progressBar.hide();
-            }
+        }).addOnSuccessListener(taskSnapshot -> {
+            Log.d("Success", "onSuccess: ");
+            saveToFirebaseFirestore(textID, userId);
+            progressBar.hide();
         });
     }
 

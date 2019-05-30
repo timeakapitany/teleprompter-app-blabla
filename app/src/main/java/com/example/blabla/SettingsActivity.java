@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ScrollView;
@@ -17,6 +18,10 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.skydoves.colorpickerview.ColorPickerDialog;
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
 
@@ -30,6 +35,10 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String TEXTPROJECT = "textProject";
     private static final int SIZE = 14;
     SharedPreferences sharedPreferences;
+    String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+
     @BindView(R.id.text_preview)
     TextView previewText;
     @BindView(R.id.scrollview_text_preview)
@@ -65,7 +74,7 @@ public class SettingsActivity extends AppCompatActivity {
         sharedPreferences = getSharedPreferences("blabla", Context.MODE_PRIVATE);
         onNewIntent(getIntent());
         seekbarScrollingSpeed.setMax(MAX - 1);
-        previewText.setText(populateText(textProject));
+        populateText(textProject);
         previewText.setTextSize(getTextSizeByProgress(textProject.getTextSize()));
         seekbarTextSize.setProgress(textProject.getTextSize());
         scrollView.setBackgroundColor(Color.parseColor(textProject.getBackgroundColor()));
@@ -115,7 +124,17 @@ public class SettingsActivity extends AppCompatActivity {
                 sharedPreferences.edit().putInt(getString(R.string.preference_scroll_speed), textProject.getScrollSpeed()).apply();
                 sharedPreferences.edit().putBoolean(getString(R.string.preference_mirror_mode), textProject.getMirrorMode()).apply();
             } else {
-//                    TODO: save to Firebase;
+                db.collection("users")
+                        .document(userId)
+                        .collection("textprojects")
+                        .document(textProject.getTextId())
+                        .update("backgroundColor", textProject.getBackgroundColor(),
+                                "textColor", textProject.getTextColor(),
+                                "textSize", textProject.getTextSize(),
+                                "scrollSpeed", textProject.getScrollSpeed(),
+                                "mirrorMode", textProject.getMirrorMode())
+                        .addOnSuccessListener(aVoid -> Log.d("Success", "onSuccess: "))
+                        .addOnFailureListener(e -> Log.d("Failure", "onFailure: "));
             }
         });
 
@@ -178,13 +197,20 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
-    private String populateText(TextProject textProject) {
+    private void populateText(TextProject textProject) {
         String id = textProject.getTextId();
         if (id == null) {
-            return getString(R.string.test);
+            previewText.setText(R.string.test);
         } else {
-//            TODO: populate from Firebase;
-            return "TEXT HERE";
+            FirebaseStorage storage = FirebaseStorage.getInstance();
+            StorageReference storageRef = storage.getReference();
+            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            StorageReference textRef = storageRef.child(userId).child(textProject.getTextReference());
+            textRef.getBytes(1024 * 1024).addOnSuccessListener(bytes -> {
+                String text = new String(bytes);
+                previewText.setText(text);
+            });
         }
     }
 }
+
