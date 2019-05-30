@@ -2,7 +2,6 @@ package com.example.blabla;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,7 +16,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.widget.ContentLoadingProgressBar;
 
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -40,9 +38,13 @@ import butterknife.ButterKnife;
 public class CreateTextActivity extends AppCompatActivity {
 
     private static final int BROWSE_REQUEST = 2;
-    SharedPreferences sharedPreferences;
+    public static final String TEXTPROJECT = "textProject";
     private FirebaseStorage storage = FirebaseStorage.getInstance();
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    StorageReference storageRef = storage.getReference();
+    String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+    private TextProject textProject;
 
 
     @BindView(R.id.button_browse)
@@ -62,14 +64,27 @@ public class CreateTextActivity extends AppCompatActivity {
     @BindView(R.id.body_layout)
     TextInputLayout bodyInput;
 
+
+    public static Intent newIntent(Context context, TextProject textProject) {
+        Intent intent = new Intent(context, CreateTextActivity.class);
+        intent.putExtra(TEXTPROJECT, textProject);
+        return intent;
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_createtext);
         ButterKnife.bind(this);
-        sharedPreferences = getSharedPreferences("blabla", Context.MODE_PRIVATE);
+        onNewIntent(getIntent());
 
-
+        if (textProject.getTextId() != null) {
+            textTitle.setText(textProject.getTextTitle());
+            populateText(textProject);
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle("Edit text");
+            }
+        }
 
         browseButton.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -116,58 +131,65 @@ public class CreateTextActivity extends AppCompatActivity {
     }
 
     private void saveToFirebaseStorage() {
-        StorageReference storageRef = storage.getReference();
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        if (textProject.getTextId() != null) {
+            storageRef.child(userId).child(textProject.getTextReference()).delete()
+                    .addOnFailureListener(e -> Log.d("Failed", "onFailure: "))
+                    .addOnSuccessListener(aVoid -> Log.d("Success", "onSuccess: "));
+        }
         String textID = UUID.randomUUID().toString();
         StorageReference textRef = storageRef.child(userId).child(textID);
         byte[] data = textBody.getText().toString().getBytes();
         UploadTask uploadTask = textRef.putBytes(data);
-        uploadTask.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.d("Failed", "onFailure: ");
-                progressBar.hide();
-                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-            }
+        uploadTask.addOnFailureListener(e -> {
+            Log.d("Failed", "onFailure: ");
+            progressBar.hide();
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         }).addOnSuccessListener(taskSnapshot -> {
             Log.d("Success", "onSuccess: ");
-            saveToFirebaseFirestore(textID, userId);
+            saveToFirebaseFirestore(textID);
             progressBar.hide();
         });
     }
 
-    private void saveToFirebaseFirestore(String textID, String userId) {
-        String documentId = UUID.randomUUID().toString();
-
-        TextProject textProject = new TextProject();
-        textProject.setTextId(documentId);
+    private void saveToFirebaseFirestore(String textID) {
         textProject.setTextTitle(textTitle.getText().toString());
         textProject.setTextReference(textID);
-        textProject.setCreationDate(new Timestamp(new Date()));
-        textProject.setBackgroundColor(sharedPreferences.getString(getString(R.string.preference_background_color), getString(R.string.default_background)));
-        textProject.setTextColor(sharedPreferences.getString(getString(R.string.preference_text_color), getString(R.string.default_text_color)));
-        textProject.setTextSize(sharedPreferences.getInt(getString(R.string.preference_text_size), getResources().getInteger(R.integer.default_text_size)));
-        textProject.setScrollSpeed(sharedPreferences.getInt(getString(R.string.preference_scroll_speed), getResources().getInteger(R.integer.default_scroll_speed)));
-        textProject.setMirrorMode(sharedPreferences.getBoolean(getString(R.string.preference_mirror_mode), getResources().getBoolean(R.bool.default_mirror)));
+        if (textProject.getTextId() != null) {
+            db.collection("users")
+                    .document(userId)
+                    .collection("textprojects")
+                    .document(textProject.getTextId())
+                    .update("textReference", textProject.getTextReference(),
+                            "textTitle", textProject.getTextTitle())
+                    .addOnSuccessListener(aVoid -> {
+                        Log.d("Success", "onSuccess: ");
+                        Intent intent = SettingsActivity.newIntent(this, textProject);
+                        startActivity(intent);
+                        finish();
+                    })
+                    .addOnFailureListener(e -> Log.d("Failure", "onFailure: "));
 
-        db.collection("users")
-                .document(userId)
-                .collection("textprojects")
-                .document(documentId)
-                .set(textProject)
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.d("Failure", "onFailure: ");
-                    }
-                })
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
+        } else {
+            String documentId = UUID.randomUUID().toString();
+            textProject.setTextId(documentId);
+            textProject.setCreationDate(new Timestamp(new Date()));
+
+            db.collection("users")
+                    .document(userId)
+                    .collection("textprojects")
+                    .document(documentId)
+                    .set(textProject)
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.d("Failure", "onFailure: ");
+                        }
+                    })
+                    .addOnSuccessListener(aVoid -> {
                         Log.d("Success", "onSuccess: ");
                         finish();
-                    }
-                });
+                    });
+        }
 
     }
 
@@ -184,6 +206,12 @@ public class CreateTextActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        textProject = intent.getParcelableExtra(TEXTPROJECT);
+        super.onNewIntent(intent);
     }
 
     private String readTextFromUri(Uri uri) throws IOException {
@@ -209,5 +237,13 @@ public class CreateTextActivity extends AppCompatActivity {
             textInput.setError(null);
             return true;
         }
+    }
+
+    private void populateText(TextProject textProject) {
+        StorageReference textRef = storageRef.child(userId).child(textProject.getTextReference());
+        textRef.getBytes(1024 * 1024).addOnSuccessListener(bytes -> {
+            String text = new String(bytes);
+            textBody.setText(text);
+        });
     }
 }

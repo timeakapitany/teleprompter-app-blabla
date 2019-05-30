@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -55,6 +56,9 @@ public class SettingsActivity extends AppCompatActivity {
     View colorPickerBackgroundView;
     @BindView(R.id.button_save)
     Button saveButton;
+    @BindView(R.id.edit_text)
+    ImageView edit;
+
     private TextProject textProject;
     private Handler handler = new Handler();
     private Runnable runnable;
@@ -73,6 +77,7 @@ public class SettingsActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         sharedPreferences = getSharedPreferences("blabla", Context.MODE_PRIVATE);
         onNewIntent(getIntent());
+        setUpEditButton();
         seekbarScrollingSpeed.setMax(MAX - 1);
         populateText(textProject);
         previewText.setTextSize(getTextSizeByProgress(textProject.getTextSize()));
@@ -209,6 +214,16 @@ public class SettingsActivity extends AppCompatActivity {
             textRef.getBytes(1024 * 1024).addOnSuccessListener(bytes -> {
                 String text = new String(bytes);
                 previewText.setText(text);
+            });
+        }
+    }
+
+    private void setUpEditButton() {
+        if (textProject.getTextId() != null) {
+            edit.setVisibility(View.VISIBLE);
+            edit.setOnClickListener(v -> {
+                Intent intent = CreateTextActivity.newIntent(getApplicationContext(), textProject);
+                startActivity(intent);
             });
         }
     }

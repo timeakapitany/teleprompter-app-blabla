@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.LinearLayout;
 
 import androidx.annotation.IdRes;
@@ -63,12 +62,10 @@ public class MainActivity extends AppCompatActivity {
         setupRecyclerView();
 
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), CreateTextActivity.class);
-                startActivity(intent);
-            }
+        fab.setOnClickListener(view -> {
+            TextProject dummy = createDummyTextProject();
+            Intent intent = CreateTextActivity.newIntent(getApplicationContext(), dummy);
+            startActivity(intent);
         });
 
 
