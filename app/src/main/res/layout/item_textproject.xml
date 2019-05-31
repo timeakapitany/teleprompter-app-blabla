@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -11,7 +12,13 @@
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:textSize="16sp"
+        android:textStyle="bold"
         android:lines="1"
+        app:layout_constraintEnd_toStartOf="@id/more"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         android:textAlignment="viewStart"
         android:padding="@dimen/spacing_default"
         tools:text="This is the title of the text" />
@@ -20,6 +27,9 @@
         android:id="@+id/creationDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/title"
         android:padding="@dimen/spacing_default"
         android:textAlignment="viewStart"
         tools:text="04.06.2019" />
@@ -28,7 +38,11 @@
         android:id="@+id/more"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="right"
+        android:focusable="true"
+        android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         android:clickable="true"
+        app:layout_constraintTop_toTopOf="parent"
         android:src="@drawable/ic_more_horiz" />
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

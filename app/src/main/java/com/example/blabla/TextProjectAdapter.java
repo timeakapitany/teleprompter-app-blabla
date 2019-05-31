@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +21,7 @@ class TextProjectAdapter extends RecyclerView.Adapter<TextProjectViewHolder> {
     private TextProject deletedItem;
     private OnTextProjectClickListener onTextProjectClickListener;
     private List<TextProject> items = new ArrayList<>();
+    SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-YYYY");
 
     public void setOnTextProjectClickListener(OnTextProjectClickListener onTextProjectClickListener) {
         this.onTextProjectClickListener = onTextProjectClickListener;
@@ -43,7 +45,8 @@ class TextProjectAdapter extends RecyclerView.Adapter<TextProjectViewHolder> {
     public void onBindViewHolder(@NonNull TextProjectViewHolder holder, int position) {
         final TextProject item = getItem(position);
         holder.title.setText(item.getTextTitle());
-        holder.creationDate.setText(item.getCreationDate().toDate().toString());
+        String date = dateFormat.format(item.getCreationDate().toDate());
+        holder.creationDate.setText(date);
         final Context context = holder.title.getContext();
         holder.itemView.setOnClickListener(v -> {
             Intent intent = PlayTextActivity.newIntent(context, item);
@@ -90,4 +93,6 @@ class TextProjectAdapter extends RecyclerView.Adapter<TextProjectViewHolder> {
         items = newList;
         diffResult.dispatchUpdatesTo(this);
     }
+
+
 }
