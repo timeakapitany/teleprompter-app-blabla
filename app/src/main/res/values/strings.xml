@@ -41,4 +41,6 @@ Pellentesque habitant morbi tristique senectus. Massa sed elementum tempus egest
     <string name="button_browse">Browse</string>
     <string name="clear_all">Clear All</string>
     <string name="title_hint">Title</string>
+    <string name="appwidget_text">BlaBla</string>
+    <string name="add_widget">Add widget</string>
 </resources>
