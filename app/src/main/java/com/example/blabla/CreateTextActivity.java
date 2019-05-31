@@ -3,6 +3,7 @@ package com.example.blabla;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -17,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.widget.ContentLoadingProgressBar;
 
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -46,7 +48,8 @@ public class CreateTextActivity extends AppCompatActivity {
     String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
     private TextProject textProject;
-
+    @BindView(R.id.file_path)
+    EditText filePath;
 
     @BindView(R.id.button_browse)
     Button browseButton;
@@ -64,6 +67,11 @@ public class CreateTextActivity extends AppCompatActivity {
     TextInputLayout titleInput;
     @BindView(R.id.body_layout)
     TextInputLayout bodyInput;
+    @BindView(R.id.file_path_layout)
+    TextInputLayout filePathInput;
+    @BindView(R.id.button_import)
+    Button importButton;
+    private TextLoadAsyncTask textLoadAsyncTask;
 
 
     public static Intent newIntent(Context context, TextProject textProject) {
@@ -92,6 +100,30 @@ public class CreateTextActivity extends AppCompatActivity {
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             intent.setType("text/*");
             startActivityForResult(intent, BROWSE_REQUEST);
+        });
+
+        importButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String url = filePath.getText().toString().trim();
+                if (url.isEmpty()) {
+                    filePathInput.setError(getResources().getString(R.string.required_field));
+                } else if (!url.endsWith(".txt")) {
+                    filePathInput.setError(getResources().getString(R.string.required_field_txt));
+                } else {
+                    startNetworkCall(url);
+                }
+
+            }
+        });
+
+        filePath.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    filePathInput.setError(null);
+                }
+            }
         });
 
         clearButton.setOnClickListener(v -> {
@@ -155,43 +187,38 @@ public class CreateTextActivity extends AppCompatActivity {
     private void saveToFirebaseFirestore(String textID) {
         textProject.setTextTitle(textTitle.getText().toString());
         textProject.setTextReference(textID);
-        if (textProject.getTextId() != null) {
-            db.collection("users")
-                    .document(userId)
-                    .collection("textprojects")
-                    .document(textProject.getTextId())
-                    .update("textReference", textProject.getTextReference(),
-                            "textTitle", textProject.getTextTitle())
-                    .addOnSuccessListener(aVoid -> {
-                        Log.d("Success", "onSuccess: ");
-                        Intent intent = SettingsActivity.newIntent(this, textProject);
-                        startActivity(intent);
-//                        finish();
-                        onBackPressed();
-                    })
-                    .addOnFailureListener(e -> Log.d("Failure", "onFailure: "));
-
-        } else {
-            String documentId = UUID.randomUUID().toString();
+        String documentId;
+        Boolean newText = (textProject.getTextId() == null);
+        if (textProject.getTextId() == null) {
+            documentId = UUID.randomUUID().toString();
             textProject.setTextId(documentId);
             textProject.setCreationDate(new Timestamp(new Date()));
-
-            db.collection("users")
-                    .document(userId)
-                    .collection("textprojects")
-                    .document(documentId)
-                    .set(textProject)
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.d("Failure", "onFailure: ");
-                        }
-                    })
-                    .addOnSuccessListener(aVoid -> {
-                        Log.d("Success", "onSuccess: ");
-                        finish();
-                    });
+        } else {
+            documentId = textProject.getTextId();
         }
+        db.collection("users")
+                .document(userId)
+                .collection("textprojects")
+                .document(documentId)
+                .set(textProject)
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d("Failure", "onFailure: ");
+                    }
+                })
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("Success", "onSuccess: ");
+                        if (!newText) {
+                            Intent intent = SettingsActivity.newIntent(getApplicationContext(), textProject);
+                            startActivity(intent);
+                        }
+                        onBackPressed();
+                    }
+                });
+
 
     }
 
@@ -233,7 +260,7 @@ public class CreateTextActivity extends AppCompatActivity {
     private Boolean validateText(TextInputLayout textInput) {
         String text = textInput.getEditText().getText().toString().trim();
         if (text.isEmpty()) {
-            textInput.setError("Field cannot be empty");
+            textInput.setError(getResources().getString(R.string.required_field));
             return false;
         } else {
             textInput.setError(null);
@@ -256,5 +283,30 @@ public class CreateTextActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void startNetworkCall(String url) {
+        textLoadAsyncTask = new TextLoadAsyncTask();
+        textLoadAsyncTask.execute(url);
+    }
+
+    static class TextLoadAsyncTask extends AsyncTask<String, Void, String> {
+        private static final String TAG = "TextLoadAsyncTask";
+
+
+        @Override
+        protected String doInBackground(String... strings) {
+            Log.d(TAG, "doInBackground: " + strings[0]);
+            String textFeed = NetworkUtils.downloadData(strings[0]);
+            return textFeed;
+        }
+
+        @Override
+        protected void onPostExecute(String text) {
+            super.onPostExecute(text);
+            if (text != null) {
+                Log.d(TAG, "onPostExecute: ");
+            }
+        }
     }
 }

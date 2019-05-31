@@ -36,11 +36,16 @@ Pellentesque habitant morbi tristique senectus. Massa sed elementum tempus egest
     <string name="action_edit">Edit</string>
     <string name="action_delete">Delete</string>
     <string name="create_name">New Text</string>
-    <string name="import_file">Import:</string>
+    <string name="import_file">Import from file:</string>
     <string name="edit_text_hint">Type or paste your text here</string>
     <string name="button_browse">Browse</string>
     <string name="clear_all">Clear All</string>
     <string name="title_hint">Title</string>
     <string name="appwidget_text">BlaBla</string>
     <string name="add_widget">Add widget</string>
+    <string name="button_import">Import</string>
+    <string name="enter_url">Enter URL of .txt file</string>
+    <string name="or">OR</string>
+    <string name="required_field">Required field</string>
+    <string name="required_field_txt">Required file format.txt</string>
 </resources>

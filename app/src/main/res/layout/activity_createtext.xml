@@ -9,27 +9,79 @@
         android:id="@+id/title_import"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textSize="16dp"
         android:padding="@dimen/spacing_default"
         android:text="@string/import_file"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBaseline_toBaselineOf="@+id/button_browse"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/file_path"
-        android:layout_width="250dp"
-        android:layout_height="wrap_content"
-        android:ellipsize="middle"
-        android:padding="@dimen/spacing_default"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/title_import" />
 
     <Button
         android:id="@+id/button_browse"
+        style="@style/Widget.AppCompat.Button.Borderless"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_margin="@dimen/spacing_button"
         android:text="@string/button_browse"
-        app:layout_constraintBaseline_toBaselineOf="@id/file_path"
-        app:layout_constraintStart_toEndOf="@id/file_path" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/view_divider"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_margin="@dimen/spacing_default"
+        android:background="@drawable/divider"
+        app:layout_constraintTop_toBottomOf="@id/button_browse" />
+
+    <TextView
+        android:id="@+id/text_or"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_default"
+        android:text="@string/or"
+        app:layout_constraintBottom_toBottomOf="@id/view_divider"
+        app:layout_constraintEnd_toEndOf="@id/view_divider"
+        app:layout_constraintStart_toStartOf="@id/view_divider"
+        app:layout_constraintTop_toTopOf="@id/view_divider" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/file_path_layout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_default"
+        app:errorEnabled="true"
+        app:layout_constraintEnd_toStartOf="@id/button_import"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/view_divider">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/file_path"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="middle"
+            android:hint="@string/enter_url"
+            android:padding="@dimen/spacing_default" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/button_import"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_margin="@dimen/spacing_button"
+        android:text="@string/button_import"
+        app:layout_constraintBottom_toBottomOf="@id/file_path_layout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/file_path_layout" />
+
+    <View
+        android:id="@+id/view_divider2"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_margin="@dimen/spacing_default"
+        android:background="@drawable/divider"
+        app:layout_constraintTop_toBottomOf="@id/file_path_layout" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/title_layout"
@@ -40,7 +92,7 @@
         app:counterMaxLength="40"
         app:errorEnabled="true"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/file_path">
+        app:layout_constraintTop_toBottomOf="@id/view_divider2">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/title"
@@ -73,18 +125,21 @@
         android:id="@+id/button_save_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/spacing_default"
+        style="@style/TextAppearance.AppCompat.Widget.Button.Colored"
         android:text="@string/save"
         app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_margin="@dimen/spacing_button"
+        android:background="@color/colorAccent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
         android:id="@+id/button_clear_all"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/spacing_default"
+        style="@style/Widget.AppCompat.Button.Borderless"
         android:text="@string/clear_all"
         app:layout_constraintBaseline_toBaselineOf="@id/button_save_text"
+        android:layout_margin="@dimen/spacing_button"
         app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.core.widget.ContentLoadingProgressBar
