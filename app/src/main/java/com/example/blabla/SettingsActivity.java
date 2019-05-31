@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -29,6 +28,7 @@ import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import timber.log.Timber;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -138,8 +138,8 @@ public class SettingsActivity extends AppCompatActivity {
                                 "textSize", textProject.getTextSize(),
                                 "scrollSpeed", textProject.getScrollSpeed(),
                                 "mirrorMode", textProject.getMirrorMode())
-                        .addOnSuccessListener(aVoid -> Log.d("Success", "onSuccess: "))
-                        .addOnFailureListener(e -> Log.d("Failure", "onFailure: "));
+                        .addOnSuccessListener(aVoid -> Timber.d("onSuccess: "))
+                        .addOnFailureListener(e -> Timber.d("onFailure: "));
             }
         });
 

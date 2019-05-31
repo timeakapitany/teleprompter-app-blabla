@@ -9,6 +9,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import timber.log.Timber;
+
 public class NetworkUtils {
     private static final String TAG = NetworkUtils.class.getSimpleName();
 
@@ -19,7 +21,7 @@ public class NetworkUtils {
             URL url = new URL(urlPath);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             int response = connection.getResponseCode();
-            Log.d(TAG, "downloadData response code is " + response);
+            Timber.d("downloadData response code is " + response);
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 

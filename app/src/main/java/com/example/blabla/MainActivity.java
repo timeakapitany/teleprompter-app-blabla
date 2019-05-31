@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
@@ -34,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+
+import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -156,6 +157,7 @@ public class MainActivity extends AppCompatActivity {
         textProjectAdapter = new TextProjectAdapter();
         textProjectAdapter.setOnTextProjectClickListener((textProject, view, position) -> {
             BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(R.menu.menu_bottom_sheet);
+            bottomSheetDialog.setTitle(textProject.getTextTitle());
             bottomSheetDialog.setOnClickListener(v -> {
                 handleBottomSheetMenuClick(textProject, v.getId(), position);
                 bottomSheetDialog.dismiss();
@@ -223,19 +225,19 @@ public class MainActivity extends AppCompatActivity {
         registration = collectionReference.addSnapshotListener((queryDocumentSnapshots, e) -> {
             List<TextProject> list = new ArrayList<>();
             if (e != null) {
-                Log.w(TAG, "Listen failed.", e);
+                Timber.w(e);
                 return;
             }
 
             if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
-                Log.d(TAG, "Data exists ");
+                Timber.d("Data exists ");
                 for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                     list.add(document.toObject(TextProject.class));
                 }
                 textProjectAdapter.updateList(list);
 
             } else {
-                Log.d(TAG, "Current data: null");
+                Timber.d("Current data: null");
             }
 
         });

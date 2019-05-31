@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -37,6 +36,7 @@ import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import timber.log.Timber;
 
 public class CreateTextActivity extends AppCompatActivity {
 
@@ -166,19 +166,19 @@ public class CreateTextActivity extends AppCompatActivity {
     private void saveToFirebaseStorage() {
         if (textProject.getTextId() != null) {
             storageRef.child(userId).child(textProject.getTextReference()).delete()
-                    .addOnFailureListener(e -> Log.d("Failed", "onFailure: "))
-                    .addOnSuccessListener(aVoid -> Log.d("Success", "onSuccess: "));
+                    .addOnFailureListener(e -> Timber.d("onFailure: "))
+                    .addOnSuccessListener(aVoid -> Timber.d("onSuccess: "));
         }
         String textID = UUID.randomUUID().toString();
         StorageReference textRef = storageRef.child(userId).child(textID);
         byte[] data = textBody.getText().toString().getBytes();
         UploadTask uploadTask = textRef.putBytes(data);
         uploadTask.addOnFailureListener(e -> {
-            Log.d("Failed", "onFailure: ");
+            Timber.d("onFailure: ");
             progressBar.hide();
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         }).addOnSuccessListener(taskSnapshot -> {
-            Log.d("Success", "onSuccess: ");
+            Timber.d("onSuccess: ");
             saveToFirebaseFirestore(textID);
             progressBar.hide();
         });
@@ -204,13 +204,13 @@ public class CreateTextActivity extends AppCompatActivity {
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.d("Failure", "onFailure: ");
+                        Timber.d("onFailure: ");
                     }
                 })
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Log.d("Success", "onSuccess: ");
+                        Timber.d("onSuccess: ");
                         if (!newText) {
                             Intent intent = SettingsActivity.newIntent(getApplicationContext(), textProject);
                             startActivity(intent);
@@ -296,7 +296,7 @@ public class CreateTextActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(String... strings) {
-            Log.d(TAG, "doInBackground: " + strings[0]);
+            Timber.d("doInBackground: " + strings[0]);
             String textFeed = NetworkUtils.downloadData(strings[0]);
             return textFeed;
         }
@@ -305,7 +305,7 @@ public class CreateTextActivity extends AppCompatActivity {
         protected void onPostExecute(String text) {
             super.onPostExecute(text);
             if (text != null) {
-                Log.d(TAG, "onPostExecute: ");
+                Timber.d("onPostExecute: ");
             }
         }
     }

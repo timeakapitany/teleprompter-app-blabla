@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -18,6 +17,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+
+import timber.log.Timber;
 
 public class SwipeToEditDeleteCallback extends ItemTouchHelper.SimpleCallback {
 
@@ -68,15 +69,15 @@ public class SwipeToEditDeleteCallback extends ItemTouchHelper.SimpleCallback {
                 TextProject deletedText = textAdapter.getDeletedItem();
                 if (deletedText != null) {
                     storageRef.child(userId).child(deletedText.getTextReference()).delete()
-                            .addOnFailureListener(e -> Log.d("Failed", "onFailure: "))
-                            .addOnSuccessListener(aVoid -> Log.d("Success", "onSuccess: "));
+                            .addOnFailureListener(e -> Timber.d("onFailure: "))
+                            .addOnSuccessListener(aVoid -> Timber.d("onSuccess: "));
                     db.collection("users")
                             .document(userId)
                             .collection("textprojects")
                             .document(deletedText.getTextId())
                             .delete()
-                            .addOnSuccessListener(aVoid -> Log.d("Success", "onSuccess: "))
-                            .addOnFailureListener(e -> Log.d("Failed", "onFailure: "));
+                            .addOnSuccessListener(aVoid -> Timber.d("onSuccess: "))
+                            .addOnFailureListener(e -> Timber.d("onFailure: "));
                 }
                 super.onDismissed(transientBottomBar, event);
             }

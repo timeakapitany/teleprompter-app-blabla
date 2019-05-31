@@ -10,7 +10,7 @@
         android:id="@+id/menu_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/spacing_default"
+        android:layout_margin="@dimen/spacing_button"
         android:tint="?colorControlNormal"
         tools:src="@drawable/ic_play" />
 
@@ -18,6 +18,6 @@
         android:id="@+id/menu_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="@dimen/spacing_default"
+        android:padding="@dimen/spacing_button"
         tools:text="@string/action_play" />
 </LinearLayout>

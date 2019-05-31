@@ -22,7 +22,7 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
 
     private int menuRes;
     private View.OnClickListener onClickListener;
-
+    private String title;
 
     public BottomSheetDialog(@MenuRes int menuRes) {
         this.menuRes = menuRes;
@@ -36,7 +36,8 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = View.inflate(getContext(), R.layout.fragment_bottom_sheet_menu, null);
-        TextView title = view.findViewById(R.id.bottom_sheet_title);
+        TextView titleView = view.findViewById(R.id.bottom_sheet_title);
+        titleView.setText(title);
         setupMenu(view);
         return view;
     }
@@ -56,5 +57,9 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
             menuItemView.setOnClickListener(onClickListener);
             layout.addView(menuItemView);
         }
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

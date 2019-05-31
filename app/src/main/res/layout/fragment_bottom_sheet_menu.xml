@@ -10,6 +10,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAlignment="center"
+        android:padding="@dimen/spacing_default"
+        android:singleLine="true"
+        android:textSize="16sp"
         tools:text="Text project title comes here" />
 
     <LinearLayout
