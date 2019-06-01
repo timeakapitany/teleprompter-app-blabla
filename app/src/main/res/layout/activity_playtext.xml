@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -9,7 +9,11 @@
     <ScrollView
         android:id="@+id/scrollview_play_text"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/play_text"
@@ -24,22 +28,28 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/controls"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
         android:alpha="0.75"
         android:background="@android:color/black"
         android:clickable="true"
-        android:visibility="gone">
+        android:focusable="true"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintWidth_max="@dimen/control_max_width"
+        tools:visibility="visible">
 
         <ImageView
             android:id="@+id/play_control"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_margin="@dimen/spacing_default"
+            android:layout_margin="@dimen/spacing_button"
             android:src="@drawable/ic_pause"
             app:layout_constraintBottom_toTopOf="@id/title_text_size"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/title_text_size"
@@ -63,14 +73,16 @@
 
         <TextView
             android:id="@+id/title_mirror_mode"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:padding="@dimen/spacing_default"
             android:text="@string/title_mirror_mode"
             android:textColor="@android:color/white"
-            app:layout_constraintBottom_toBottomOf="@id/color_picker_background"
-            app:layout_constraintStart_toEndOf="@id/color_picker_background"
-            app:layout_constraintTop_toTopOf="@id/color_picker_background" />
+            android:textAlignment="viewEnd"
+            app:layout_constraintBottom_toBottomOf="@id/color_picker_background_border"
+            app:layout_constraintEnd_toStartOf="@id/switch_mirror_mode"
+            app:layout_constraintStart_toEndOf="@id/color_picker_background_border"
+            app:layout_constraintTop_toTopOf="@id/color_picker_background_border" />
 
 
         <androidx.constraintlayout.widget.Barrier
@@ -106,35 +118,50 @@
 
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/switch_mirror_mode"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="@dimen/spacing_default"
+            android:layout_margin="@dimen/spacing_button"
             app:layout_constraintBottom_toBottomOf="@id/title_mirror_mode"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toEndOf="@id/title_mirror_mode"
             app:layout_constraintTop_toTopOf="@+id/title_mirror_mode" />
 
-        <View
-            android:id="@+id/color_picker_text"
+        <FrameLayout
+            android:id="@+id/color_picker_text_border"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_margin="4dp"
-            android:background="@color/colorAccent"
-            android:padding="@dimen/spacing_default"
+            android:layout_margin="@dimen/spacing_button"
+            android:background="@color/white"
             app:layout_constraintBottom_toTopOf="@id/title_text_size"
-            app:layout_constraintStart_toEndOf="@id/barrier"
-            tools:background="@color/colorAccent" />
+            android:padding="1dp"
+            app:layout_constraintStart_toEndOf="@id/play_control">
 
-        <View
-            android:id="@+id/color_picker_background"
+            <View
+                android:id="@+id/color_picker_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                tools:background="@color/colorAccent" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/color_picker_background_border"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_margin="4dp"
-            android:background="@color/colorPrimary"
-            android:padding="@dimen/spacing_default"
+            android:layout_margin="@dimen/spacing_button"
+            android:background="@color/white"
             app:layout_constraintBottom_toTopOf="@id/title_text_size"
-            app:layout_constraintStart_toEndOf="@id/color_picker_text"
-            tools:background="@color/colorPrimary" />
+            android:padding="1dp"
+            app:layout_constraintStart_toEndOf="@id/color_picker_text_border">
 
-
+            <View
+                android:id="@+id/color_picker_background"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                tools:background="@color/colorPrimary" />
+        </FrameLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -7,8 +7,9 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.SeekBar;
@@ -39,7 +40,6 @@ public class SettingsActivity extends AppCompatActivity {
     String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-
     @BindView(R.id.text_preview)
     TextView previewText;
     @BindView(R.id.scrollview_text_preview)
@@ -54,8 +54,6 @@ public class SettingsActivity extends AppCompatActivity {
     View colorPickerTextView;
     @BindView(R.id.color_picker_background)
     View colorPickerBackgroundView;
-    @BindView(R.id.button_save)
-    Button saveButton;
     @BindView(R.id.edit_text)
     ImageView edit;
 
@@ -121,29 +119,29 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
-        saveButton.setOnClickListener(v -> {
-            if (textProject.getTextId() == null) {
-                sharedPreferences.edit().putString(getString(R.string.preference_background_color), textProject.getBackgroundColor()).apply();
-                sharedPreferences.edit().putString(getString(R.string.preference_text_color), textProject.getTextColor()).apply();
-                sharedPreferences.edit().putInt(getString(R.string.preference_text_size), textProject.getTextSize()).apply();
-                sharedPreferences.edit().putInt(getString(R.string.preference_scroll_speed), textProject.getScrollSpeed()).apply();
-                sharedPreferences.edit().putBoolean(getString(R.string.preference_mirror_mode), textProject.getMirrorMode()).apply();
-            } else {
-                db.collection("users")
-                        .document(userId)
-                        .collection("textprojects")
-                        .document(textProject.getTextId())
-                        .update("backgroundColor", textProject.getBackgroundColor(),
-                                "textColor", textProject.getTextColor(),
-                                "textSize", textProject.getTextSize(),
-                                "scrollSpeed", textProject.getScrollSpeed(),
-                                "mirrorMode", textProject.getMirrorMode())
-                        .addOnSuccessListener(aVoid -> Timber.d("onSuccess: "))
-                        .addOnFailureListener(e -> Timber.d("onFailure: "));
-            }
-        });
 
+    }
 
+    private void saveSettings() {
+        if (textProject.getTextId() == null) {
+            sharedPreferences.edit().putString(getString(R.string.preference_background_color), textProject.getBackgroundColor()).apply();
+            sharedPreferences.edit().putString(getString(R.string.preference_text_color), textProject.getTextColor()).apply();
+            sharedPreferences.edit().putInt(getString(R.string.preference_text_size), textProject.getTextSize()).apply();
+            sharedPreferences.edit().putInt(getString(R.string.preference_scroll_speed), textProject.getScrollSpeed()).apply();
+            sharedPreferences.edit().putBoolean(getString(R.string.preference_mirror_mode), textProject.getMirrorMode()).apply();
+        } else {
+            db.collection("users")
+                    .document(userId)
+                    .collection("textprojects")
+                    .document(textProject.getTextId())
+                    .update("backgroundColor", textProject.getBackgroundColor(),
+                            "textColor", textProject.getTextColor(),
+                            "textSize", textProject.getTextSize(),
+                            "scrollSpeed", textProject.getScrollSpeed(),
+                            "mirrorMode", textProject.getMirrorMode())
+                    .addOnSuccessListener(aVoid -> Timber.d("onSuccess: "))
+                    .addOnFailureListener(e -> Timber.d("onFailure: "));
+        }
     }
 
     @Override
@@ -226,6 +224,23 @@ public class SettingsActivity extends AppCompatActivity {
                 startActivity(intent);
             });
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_settings, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_save) {
+            saveSettings();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
 

@@ -25,6 +25,7 @@
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/scrollview_text_preview"
         app:layout_constraintEnd_toEndOf="parent"
+        android:background="?selectableItemBackground"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ScrollView
@@ -87,17 +88,9 @@
         android:layout_height="wrap_content"
         android:padding="@dimen/spacing_default"
         android:text="@string/title_mirror_mode"
-        app:layout_constraintBottom_toTopOf="@+id/button_save"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
-        android:id="@+id/button_save"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/spacing_default"
-        android:text="@string/save"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
 
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/barrier"
@@ -139,28 +132,44 @@
         app:layout_constraintStart_toEndOf="@id/barrier"
         app:layout_constraintTop_toTopOf="@+id/title_mirror_mode" />
 
-    <View
-        android:id="@+id/color_picker_text"
+    <FrameLayout
+        android:id="@+id/color_picker_text_border"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="4dp"
-        android:padding="@dimen/spacing_default"
+        android:background="@color/black"
+        android:padding="1dp"
         app:layout_constraintBottom_toBottomOf="@id/title_text_color"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/barrier"
-        app:layout_constraintTop_toTopOf="@+id/title_text_color"
-        tools:backgroundTint="@color/primaryTextColor" />
+        app:layout_constraintTop_toTopOf="@+id/title_text_color">
 
-    <View
-        android:id="@+id/color_picker_background"
+        <View
+            android:id="@+id/color_picker_text"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            tools:backgroundTint="@color/primaryTextColor" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/color_picker_background_border"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="4dp"
-        android:padding="@dimen/spacing_default"
+        android:background="@color/black"
+        android:padding="1dp"
         app:layout_constraintBottom_toBottomOf="@id/title_background_color"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/barrier"
-        app:layout_constraintTop_toTopOf="@+id/title_background_color"
-        tools:backgroundTint="@color/colorPrimary" />
+        app:layout_constraintTop_toTopOf="@+id/title_background_color">
+
+        <View
+            android:id="@+id/color_picker_background"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            tools:backgroundTint="@color/colorPrimary" />
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

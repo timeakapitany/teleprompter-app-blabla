@@ -35,6 +35,10 @@ public class PlayTextActivity extends AppCompatActivity {
     public static final String TEXTPROJECT = "textProject";
     public static final int MAX = 30;
     private static final int SIZE = 14;
+    private Handler handler = new Handler();
+    private Runnable runnable;
+    private int scrollSpeedDelay = MAX;
+    private PlayTextViewModel model;
     SharedPreferences sharedPreferences;
 
     @BindView(R.id.scrollview_play_text)
@@ -56,10 +60,7 @@ public class PlayTextActivity extends AppCompatActivity {
     ImageView playControl;
     @BindView(R.id.controls)
     ConstraintLayout controls;
-    private Handler handler = new Handler();
-    private Runnable runnable;
-    private int scrollSpeedDelay = MAX;
-    private PlayTextViewModel model;
+
 
     public static Intent newIntent(Context context, TextProject textProject) {
         Intent intent = new Intent(context, PlayTextActivity.class);

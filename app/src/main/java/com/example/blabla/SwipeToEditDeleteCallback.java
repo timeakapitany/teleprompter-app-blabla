@@ -28,7 +28,6 @@ public class SwipeToEditDeleteCallback extends ItemTouchHelper.SimpleCallback {
     private final Drawable editIcon;
     private final ColorDrawable deleteBackground;
     private final ColorDrawable editBackground;
-    String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
     private FirebaseStorage storage = FirebaseStorage.getInstance();
     StorageReference storageRef = storage.getReference();
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -40,7 +39,7 @@ public class SwipeToEditDeleteCallback extends ItemTouchHelper.SimpleCallback {
         deleteIcon = ContextCompat.getDrawable(recyclerView.getContext(), R.drawable.ic_delete);
         editIcon = ContextCompat.getDrawable(recyclerView.getContext(), R.drawable.ic_edit);
         deleteBackground = new ColorDrawable(Color.RED);
-        editBackground = new ColorDrawable(Color.BLUE);
+        editBackground = new ColorDrawable(recyclerView.getContext().getResources().getColor(R.color.colorPrimaryDark));
     }
 
     @Override
@@ -61,6 +60,8 @@ public class SwipeToEditDeleteCallback extends ItemTouchHelper.SimpleCallback {
     }
 
     private void undoDeleteSnackbar() {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
         Snackbar snackbar = Snackbar.make(textRecyclerView,
                 R.string.snackbar, Snackbar.LENGTH_LONG);
         Snackbar.Callback callback = new Snackbar.Callback() {
@@ -93,7 +94,6 @@ public class SwipeToEditDeleteCallback extends ItemTouchHelper.SimpleCallback {
 
     @Override
     public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
-        super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
         View view = viewHolder.itemView;
 
         if (dX > 0) {
@@ -117,5 +117,14 @@ public class SwipeToEditDeleteCallback extends ItemTouchHelper.SimpleCallback {
             deleteBackground.draw(c);
             deleteIcon.draw(c);
         }
+        super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+
+
+    }
+
+    @Override
+    public void clearView(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+        super.clearView(recyclerView, viewHolder);
+        viewHolder.itemView.setTranslationX(0f);
     }
 }

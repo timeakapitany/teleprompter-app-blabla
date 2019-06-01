@@ -14,7 +14,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-
 class TextProjectAdapter extends RecyclerView.Adapter<TextProjectViewHolder> {
 
     private int deletedItemPosition;
@@ -30,9 +29,6 @@ class TextProjectAdapter extends RecyclerView.Adapter<TextProjectViewHolder> {
     public TextProject getDeletedItem() {
         return deletedItem;
     }
-
-
-
 
     @NonNull
     @Override
@@ -53,13 +49,12 @@ class TextProjectAdapter extends RecyclerView.Adapter<TextProjectViewHolder> {
             context.startActivity(intent);
         });
 
-        holder.itemView.findViewById(R.id.more).setOnClickListener(new View.OnClickListener() {
+        holder.more.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onTextProjectClickListener.onTextProjectClicked(item, v, holder.getAdapterPosition());
             }
         });
-
     }
 
     private TextProject getItem(int position) {
@@ -77,7 +72,6 @@ class TextProjectAdapter extends RecyclerView.Adapter<TextProjectViewHolder> {
         items.remove(position);
         notifyItemRemoved(position);
     }
-
 
     public void undoDeleteItem() {
         items.add(deletedItemPosition, deletedItem);

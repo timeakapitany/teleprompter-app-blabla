@@ -28,6 +28,9 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
         this.menuRes = menuRes;
     }
 
+    public BottomSheetDialog() {
+    }
+
     public void setOnClickListener(View.OnClickListener onClickListener) {
         this.onClickListener = onClickListener;
     }

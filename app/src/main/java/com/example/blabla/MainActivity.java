@@ -34,6 +34,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
@@ -46,39 +48,42 @@ public class MainActivity extends AppCompatActivity {
     private ListenerRegistration registration;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    @BindView(R.id.recyclerView)
+    RecyclerView recyclerView;
+    @BindView(R.id.fab)
+    FloatingActionButton fab;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         sharedPreferences = getSharedPreferences("blabla", Context.MODE_PRIVATE);
+        setupRecyclerView();
+
         firebaseAuth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                userSignIn();
+                if (firebaseAuth.getCurrentUser() == null) {
+                    if (registration != null) {
+                        registration.remove();
+                    }
+                    userSignIn();
+                } else {
+                    listenDatabaseChanges();
+                }
             }
         });
-        userSignIn();
 
-        setupRecyclerView();
-
-        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
             TextProject dummy = createDummyTextProject();
             Intent intent = CreateTextActivity.newIntent(getApplicationContext(), dummy);
             startActivity(intent);
         });
 
-
-        firebaseAuth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                if (firebaseAuth.getCurrentUser() == null) {
-                    registration.remove();
-                }
-            }
-        });
     }
 
     @Override
@@ -90,12 +95,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             TextProject dummy = createDummyTextProject();
             Intent intent = SettingsActivity.newIntent(this, dummy);
@@ -122,7 +123,6 @@ public class MainActivity extends AppCompatActivity {
                 getSharedPreferences("blabla", Context.MODE_PRIVATE).edit().putString("UserId", user.getUid()).apply();
             } else {
                 //TODO
-
             }
         }
     }
@@ -130,7 +130,6 @@ public class MainActivity extends AppCompatActivity {
     private void userSignIn() {
         List<AuthUI.IdpConfig> providers = Arrays.asList(
                 new AuthUI.IdpConfig.EmailBuilder().build());
-
 
         if (firebaseAuth.getCurrentUser() == null) {
             startActivityForResult(
@@ -140,16 +139,13 @@ public class MainActivity extends AppCompatActivity {
                             .build(),
                     RC_SIGN_IN);
         }
-
     }
 
     private void userSignOut() {
         firebaseAuth.signOut();
     }
 
-
     private void setupRecyclerView() {
-        RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 1));
         DividerItemDecoration decorator = new DividerItemDecoration(this, LinearLayout.VERTICAL);
         decorator.setDrawable(ContextCompat.getDrawable(this, R.drawable.divider));
@@ -165,7 +161,6 @@ public class MainActivity extends AppCompatActivity {
             bottomSheetDialog.show(this.getSupportFragmentManager(), null);
         });
         recyclerView.setAdapter(textProjectAdapter);
-        listenDatabaseChanges();
         ItemTouchHelper itemTouchHelper = new
                 ItemTouchHelper(new SwipeToEditDeleteCallback(textProjectAdapter, recyclerView));
         itemTouchHelper.attachToRecyclerView(recyclerView);
