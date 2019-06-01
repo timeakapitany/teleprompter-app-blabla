@@ -3,9 +3,14 @@ package com.example.blabla.ui.main;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.LinearLayout;
 
 import androidx.annotation.IdRes;
@@ -27,6 +32,7 @@ import com.example.blabla.ui.settings.SettingsActivity;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -34,6 +40,8 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,6 +61,9 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences sharedPreferences;
     private ListenerRegistration registration;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final FirebaseStorage storage = FirebaseStorage.getInstance();
+    private final StorageReference storageRef = storage.getReference();
+
     @BindView(R.id.toolbar)
     Toolbar toolbar;
 
@@ -170,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
         });
         recyclerView.setAdapter(textProjectAdapter);
         ItemTouchHelper itemTouchHelper = new
-                ItemTouchHelper(new SwipeToEditDeleteCallback(textProjectAdapter, recyclerView));
+                ItemTouchHelper(new SwipeToEditDeleteCallback());
         itemTouchHelper.attachToRecyclerView(recyclerView);
     }
 
@@ -186,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
                 this.startActivity(intent);
                 break;
             case R.id.action_delete:
-                textProjectAdapter.deleteItem(position);
+                deleteItem(position);
         }
     }
 
@@ -219,6 +230,44 @@ public class MainActivity extends AppCompatActivity {
         return dummy;
     }
 
+    private void deleteItem(int position) {
+        textProjectAdapter.deleteItem(position);
+        undoDeleteSnackbar();
+    }
+
+
+    private void undoDeleteSnackbar() {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        Snackbar snackbar = Snackbar.make(recyclerView,
+                R.string.snackbar, Snackbar.LENGTH_LONG);
+        Snackbar.Callback callback = new Snackbar.Callback() {
+            @Override
+            public void onDismissed(Snackbar transientBottomBar, int event) {
+                TextProject deletedText = textProjectAdapter.getDeletedItem();
+                if (deletedText != null) {
+                    storageRef.child(userId).child(deletedText.getTextReference()).delete()
+                            .addOnFailureListener(e -> Timber.d("onFailure: "))
+                            .addOnSuccessListener(aVoid -> Timber.d("onSuccess: "));
+                    db.collection("users")
+                            .document(userId)
+                            .collection("textprojects")
+                            .document(deletedText.getTextId())
+                            .delete()
+                            .addOnSuccessListener(aVoid -> Timber.d("onSuccess: "))
+                            .addOnFailureListener(e -> Timber.d("onFailure: "));
+                }
+                super.onDismissed(transientBottomBar, event);
+            }
+        };
+        snackbar.setAction(R.string.snackbar_undo_delete, v -> {
+            snackbar.removeCallback(callback);
+            textProjectAdapter.undoDeleteItem();
+        });
+
+        snackbar.addCallback(callback);
+        snackbar.show();
+    }
 
     private void listenDatabaseChanges() {
         String userId = firebaseAuth.getCurrentUser().getUid();
@@ -254,4 +303,75 @@ public class MainActivity extends AppCompatActivity {
         }
         super.onStop();
     }
+
+    public class SwipeToEditDeleteCallback extends ItemTouchHelper.SimpleCallback {
+
+        private final Drawable deleteIcon;
+        private final Drawable editIcon;
+        private final ColorDrawable deleteBackground;
+        private final ColorDrawable editBackground;
+
+
+        SwipeToEditDeleteCallback() {
+            super(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
+            deleteIcon = ContextCompat.getDrawable(recyclerView.getContext(), R.drawable.ic_delete);
+            editIcon = ContextCompat.getDrawable(recyclerView.getContext(), R.drawable.ic_edit);
+            deleteBackground = new ColorDrawable(Color.RED);
+            editBackground = new ColorDrawable(recyclerView.getContext().getResources().getColor(R.color.colorPrimaryDark));
+        }
+
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            return false;
+        }
+
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+            int position = viewHolder.getAdapterPosition();
+            if (direction == ItemTouchHelper.LEFT) {
+                deleteItem(position);
+            } else {
+                Intent intent = SettingsActivity.newIntent(recyclerView.getContext(), textProjectAdapter.getTextProject(position));
+                recyclerView.getContext().startActivity(intent);
+            }
+        }
+
+
+        @Override
+        public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+            View view = viewHolder.itemView;
+
+            if (dX > 0) {
+                int editMargin = (view.getHeight() - editIcon.getIntrinsicHeight()) / 2;
+                int editTop = view.getTop() + (view.getHeight() - editIcon.getIntrinsicHeight()) / 2;
+                int editBottom = editTop + editIcon.getIntrinsicHeight();
+                int editLeft = view.getLeft() + editMargin;
+                int editRight = editLeft + editIcon.getIntrinsicWidth();
+                editBackground.setBounds(0, view.getTop(), view.getLeft() + (int) dX, view.getBottom());
+                editIcon.setBounds(editLeft, editTop, editRight, editBottom);
+                editBackground.draw(c);
+                editIcon.draw(c);
+            } else if (dX < 0) {
+                int deleteMargin = (view.getHeight() - deleteIcon.getIntrinsicHeight()) / 2;
+                int deleteTop = view.getTop() + (view.getHeight() - deleteIcon.getIntrinsicHeight()) / 2;
+                int deleteBottom = deleteTop + deleteIcon.getIntrinsicHeight();
+                int deleteRight = view.getRight() - deleteMargin;
+                int deleteLeft = deleteRight - deleteIcon.getIntrinsicWidth();
+                deleteBackground.setBounds(view.getRight() + (int) dX, view.getTop(), view.getRight(), view.getBottom());
+                deleteIcon.setBounds(deleteLeft, deleteTop, deleteRight, deleteBottom);
+                deleteBackground.draw(c);
+                deleteIcon.draw(c);
+            }
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+
+
+        }
+
+        @Override
+        public void clearView(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+            super.clearView(recyclerView, viewHolder);
+            viewHolder.itemView.setTranslationX(0f);
+        }
+    }
+
 }
