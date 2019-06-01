@@ -36,7 +36,7 @@ Pellentesque habitant morbi tristique senectus. Massa sed elementum tempus egest
     <string name="action_edit">Edit</string>
     <string name="action_delete">Delete</string>
     <string name="create_name">New Text</string>
-    <string name="import_file">Import from file:</string>
+    <string name="import_file">Import from file</string>
     <string name="edit_text_hint">Type or paste your text here</string>
     <string name="button_browse">Browse</string>
     <string name="clear_all">Clear All</string>

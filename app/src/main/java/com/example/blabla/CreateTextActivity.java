@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -53,10 +54,6 @@ public class CreateTextActivity extends AppCompatActivity {
 
     @BindView(R.id.button_browse)
     Button browseButton;
-    @BindView(R.id.button_clear_all)
-    Button clearButton;
-    @BindView(R.id.button_save_text)
-    Button saveButton;
     @BindView(R.id.text_body)
     EditText textBody;
     @BindView(R.id.title)
@@ -126,22 +123,6 @@ public class CreateTextActivity extends AppCompatActivity {
             }
         });
 
-        clearButton.setOnClickListener(v -> {
-            textTitle.setText("");
-            textBody.setText("");
-        });
-
-        saveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (validateText(titleInput) && validateText(bodyInput)) {
-                    progressBar.show();
-                    getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-                    saveToFirebaseStorage();
-                }
-            }
-        });
 
         textTitle.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -161,6 +142,12 @@ public class CreateTextActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void clearTextFields() {
+        textTitle.setText("");
+        textBody.setText("");
+        filePath.setText("");
     }
 
     private void saveToFirebaseStorage() {
@@ -243,6 +230,14 @@ public class CreateTextActivity extends AppCompatActivity {
         super.onNewIntent(intent);
     }
 
+    @Override
+    protected void onDestroy() {
+        if (textLoadAsyncTask != null) {
+            textLoadAsyncTask.cancel(true);
+        }
+        super.onDestroy();
+    }
+
     private String readTextFromUri(Uri uri) throws IOException {
         InputStream inputStream = getContentResolver().openInputStream(uri);
         BufferedReader reader = new BufferedReader(new InputStreamReader(
@@ -277,9 +272,27 @@ public class CreateTextActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_create, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
             onBackPressed();
+            return true;
+        } else if (id == R.id.action_save) {
+            if (validateText(titleInput) && validateText(bodyInput)) {
+                progressBar.show();
+                getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                saveToFirebaseStorage();
+            }
+            return true;
+        } else if (id == R.id.action_clear) {
+            clearTextFields();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -290,7 +303,8 @@ public class CreateTextActivity extends AppCompatActivity {
         textLoadAsyncTask.execute(url);
     }
 
-    static class TextLoadAsyncTask extends AsyncTask<String, Void, String> {
+
+    class TextLoadAsyncTask extends AsyncTask<String, Void, String> {
         private static final String TAG = "TextLoadAsyncTask";
 
 
@@ -305,6 +319,7 @@ public class CreateTextActivity extends AppCompatActivity {
         protected void onPostExecute(String text) {
             super.onPostExecute(text);
             if (text != null) {
+                textBody.setText(text);
                 Timber.d("onPostExecute: ");
             }
         }
