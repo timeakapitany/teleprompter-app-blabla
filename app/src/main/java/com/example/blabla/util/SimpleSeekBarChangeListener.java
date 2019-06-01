@@ -1,4 +1,4 @@
-package com.example.blabla;
+package com.example.blabla.util;
 
 import android.widget.SeekBar;
 

@@ -1,10 +1,12 @@
-package com.example.blabla;
+package com.example.blabla.ui.main;
 
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.blabla.R;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

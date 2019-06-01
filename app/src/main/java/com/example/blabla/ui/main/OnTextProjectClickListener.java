@@ -1,6 +1,8 @@
-package com.example.blabla;
+package com.example.blabla.ui.main;
 
 import android.view.View;
+
+import com.example.blabla.model.TextProject;
 
 public interface OnTextProjectClickListener {
 

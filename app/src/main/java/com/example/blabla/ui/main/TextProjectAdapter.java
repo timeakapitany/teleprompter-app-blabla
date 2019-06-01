@@ -1,4 +1,4 @@
-package com.example.blabla;
+package com.example.blabla.ui.main;
 
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +9,10 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.blabla.R;
+import com.example.blabla.model.TextProject;
+import com.example.blabla.ui.play.PlayTextActivity;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

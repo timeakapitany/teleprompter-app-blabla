@@ -1,4 +1,4 @@
-package com.example.blabla;
+package com.example.blabla.ui.create;
 
 import android.content.Context;
 import android.content.Intent;
@@ -17,6 +17,10 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.widget.ContentLoadingProgressBar;
 
+import com.example.blabla.R;
+import com.example.blabla.model.TextProject;
+import com.example.blabla.ui.settings.SettingsActivity;
+import com.example.blabla.util.NetworkUtils;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.textfield.TextInputLayout;

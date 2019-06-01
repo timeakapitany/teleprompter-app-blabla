@@ -1,6 +1,8 @@
-package com.example.blabla;
+package com.example.blabla.ui.main;
 
 import androidx.recyclerview.widget.DiffUtil;
+
+import com.example.blabla.model.TextProject;
 
 import java.util.List;
 

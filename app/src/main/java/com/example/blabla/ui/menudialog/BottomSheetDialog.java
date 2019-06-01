@@ -1,6 +1,9 @@
-package com.example.blabla;
+package com.example.blabla.ui.menudialog;
 
+import android.app.Dialog;
 import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,6 +19,7 @@ import androidx.annotation.MenuRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.blabla.R;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 public class BottomSheetDialog extends BottomSheetDialogFragment {
@@ -35,6 +39,12 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
         this.onClickListener = onClickListener;
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -44,6 +54,29 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
         setupMenu(view);
         return view;
     }
+
+//    @Override
+//    public void onSaveInstanceState(@NonNull Bundle outState) {
+//        outState.putInt("menu", menuRes);
+//        outState.putString("title", title);
+//        super.onSaveInstanceState(outState);
+//    }
+
+    @Override
+    public void onDestroyView() {
+        Dialog dialog = getDialog();
+        if (dialog != null && getRetainInstance()) {
+            dialog.setDismissMessage(null);
+        }
+        super.onDestroyView();
+    }
+
+//    @Override
+//    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+//        super.onViewStateRestored(savedInstanceState);
+//        menuRes = savedInstanceState.getInt("menu");
+//        title = savedInstanceState.getString("title");
+//    }
 
     private void setupMenu(View view) {
         LinearLayout layout = view.findViewById(R.id.menu_container);
@@ -64,5 +97,42 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    private static class SavedState extends View.BaseSavedState {
+        public static final Creator<SavedState> CREATOR = new Creator<SavedState>() {
+            @Override
+            public SavedState createFromParcel(Parcel source) {
+                return new SavedState(source);
+            }
+
+            @Override
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+        };
+        int menu;
+        String title;
+
+        public SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        protected SavedState(Parcel in) {
+            super(in);
+            this.menu = in.readInt();
+            this.title = in.readString();
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeInt(this.menu);
+            dest.writeString(this.title);
+        }
     }
 }

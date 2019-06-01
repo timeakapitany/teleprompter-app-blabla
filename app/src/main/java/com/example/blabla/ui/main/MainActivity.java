@@ -1,4 +1,4 @@
-package com.example.blabla;
+package com.example.blabla.ui.main;
 
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +18,12 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.blabla.R;
+import com.example.blabla.model.TextProject;
+import com.example.blabla.ui.create.CreateTextActivity;
+import com.example.blabla.ui.menudialog.BottomSheetDialog;
+import com.example.blabla.ui.play.PlayTextActivity;
+import com.example.blabla.ui.settings.SettingsActivity;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -47,11 +53,14 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences sharedPreferences;
     private ListenerRegistration registration;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     @BindView(R.id.fab)
     FloatingActionButton fab;
+    private BottomSheetDialog bottomSheetDialog;
 
 
     @Override
@@ -59,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         sharedPreferences = getSharedPreferences("blabla", Context.MODE_PRIVATE);
         setupRecyclerView();
@@ -152,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.addItemDecoration(decorator);
         textProjectAdapter = new TextProjectAdapter();
         textProjectAdapter.setOnTextProjectClickListener((textProject, view, position) -> {
-            BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(R.menu.menu_bottom_sheet);
+            bottomSheetDialog = new BottomSheetDialog(R.menu.menu_bottom_sheet);
             bottomSheetDialog.setTitle(textProject.getTextTitle());
             bottomSheetDialog.setOnClickListener(v -> {
                 handleBottomSheetMenuClick(textProject, v.getId(), position);
@@ -239,5 +247,11 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
+    @Override
+    protected void onStop() {
+        if (bottomSheetDialog != null) {
+            bottomSheetDialog.dismissAllowingStateLoss();
+        }
+        super.onStop();
+    }
 }

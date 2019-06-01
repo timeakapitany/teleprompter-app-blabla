@@ -1,4 +1,4 @@
-package com.example.blabla;
+package com.example.blabla.widget;
 
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
@@ -7,6 +7,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.widget.RemoteViews;
+
+import com.example.blabla.R;
+import com.example.blabla.model.TextProject;
+import com.example.blabla.ui.create.CreateTextActivity;
 
 
 /**

@@ -1,4 +1,4 @@
-package com.example.blabla;
+package com.example.blabla.ui.main;
 
 import android.content.Intent;
 import android.graphics.Canvas;
@@ -12,6 +12,9 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.blabla.R;
+import com.example.blabla.model.TextProject;
+import com.example.blabla.ui.settings.SettingsActivity;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
