@@ -7,7 +7,10 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.blabla.R;
+import com.example.blabla.exception.InternetException;
 import com.example.blabla.model.TextProject;
+import com.example.blabla.util.NetworkUtils;
+import com.example.blabla.util.Result;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
@@ -19,7 +22,14 @@ class SettingsViewModel extends ViewModel {
 
     Context context;
     MutableLiveData<TextProject> textProject = new MutableLiveData<>();
-    MutableLiveData<String> text = new MutableLiveData<>();
+    MutableLiveData<Result<String>> text = new MutableLiveData<>();
+    MutableLiveData<Result<TextProject>> saveResult = new MutableLiveData<>();
+
+    public SettingsViewModel(TextProject textProject, Context context) {
+        this.textProject.setValue(textProject);
+        this.context = context;
+        populateText();
+    }
 
     void saveSettings(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences("blabla", Context.MODE_PRIVATE);
@@ -34,7 +44,12 @@ class SettingsViewModel extends ViewModel {
                 sharedPreferences.edit().putInt(context.getString(R.string.preference_text_size), project.getTextSize()).apply();
                 sharedPreferences.edit().putInt(context.getString(R.string.preference_scroll_speed), project.getScrollSpeed()).apply();
                 sharedPreferences.edit().putBoolean(context.getString(R.string.preference_mirror_mode), project.getMirrorMode()).apply();
+                saveResult.postValue(Result.success(project));
             } else {
+                if (!NetworkUtils.isConnected(context)) {
+                    saveResult.postValue(Result.error(new InternetException()));
+                    return;
+                }
                 db.collection("users")
                         .document(userId)
                         .collection("textprojects")
@@ -44,8 +59,14 @@ class SettingsViewModel extends ViewModel {
                                 "textSize", project.getTextSize(),
                                 "scrollSpeed", project.getScrollSpeed(),
                                 "mirrorMode", project.getMirrorMode())
-                        .addOnSuccessListener(aVoid -> Timber.d("onSuccess: "))
-                        .addOnFailureListener(e -> Timber.d("onFailure: "));
+                        .addOnSuccessListener(aVoid -> {
+                            Timber.d("onSuccess: ");
+                            saveResult.postValue(Result.success(project));
+                        })
+                        .addOnFailureListener(e -> {
+                            Timber.d("onFailure: ");
+                            saveResult.postValue(Result.error(e));
+                        });
             }
         }
     }
@@ -54,15 +75,19 @@ class SettingsViewModel extends ViewModel {
         TextProject textProject = this.textProject.getValue();
         String id = textProject.getTextId();
         if (id == null) {
-            text.postValue(context.getString(R.string.test));
+            text.postValue(Result.success(context.getString(R.string.test)));
         } else {
+            if (!NetworkUtils.isConnected(context)) {
+                text.postValue(Result.error(new InternetException()));
+                return;
+            }
             FirebaseStorage storage = FirebaseStorage.getInstance();
             StorageReference storageRef = storage.getReference();
             String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
             StorageReference textRef = storageRef.child(userId).child(textProject.getTextReference());
             textRef.getBytes(1024 * 1024).addOnSuccessListener(bytes -> {
-                text.postValue(new String(bytes));
-            });
+                text.postValue(Result.success(new String(bytes)));
+            }).addOnFailureListener(e -> text.postValue(Result.error(e)));
         }
     }
 

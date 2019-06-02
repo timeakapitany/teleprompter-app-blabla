@@ -1,6 +1,7 @@
 package com.example.blabla.util;
 
-import android.util.Log;
+import android.content.Context;
+import android.net.ConnectivityManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,7 +13,6 @@ import java.net.URL;
 import timber.log.Timber;
 
 public class NetworkUtils {
-    private static final String TAG = NetworkUtils.class.getSimpleName();
 
     public static String downloadData(String urlPath) {
         StringBuilder stringBuilder = new StringBuilder();
@@ -21,7 +21,7 @@ public class NetworkUtils {
             URL url = new URL(urlPath);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             int response = connection.getResponseCode();
-            Timber.d("downloadData response code is " + response);
+            Timber.d("downloadData response code is %s", response);
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 
@@ -39,13 +39,18 @@ public class NetworkUtils {
             reader.close();
             return stringBuilder.toString();
         } catch (MalformedURLException e) {
-            Log.e(TAG, "downloadData: Invalid URL " + e.getMessage());
+            Timber.e("downloadData: Invalid URL %s", e.getMessage());
         } catch (IOException e) {
-            Log.e(TAG, "downloadData: IO exception reading data " + e.getMessage());
+            Timber.e("downloadData: IO exception reading data %s", e.getMessage());
         } catch (SecurityException e) {
-            Log.e(TAG, "downloadData: Security exception: needs permission " + e.getMessage());
+            Timber.e("downloadData: Security exception: needs permission %s", e.getMessage());
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static boolean isConnected(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        return connectivityManager.getActiveNetworkInfo() != null;
     }
 }
