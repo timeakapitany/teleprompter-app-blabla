@@ -3,7 +3,6 @@ package com.example.blabla.ui.settings;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,31 +17,28 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.example.blabla.R;
 import com.example.blabla.model.TextProject;
 import com.example.blabla.ui.create.CreateTextActivity;
 import com.example.blabla.util.SimpleSeekBarChangeListener;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.skydoves.colorpickerview.ColorPickerDialog;
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import timber.log.Timber;
 
 public class SettingsActivity extends AppCompatActivity {
 
     public static final int MAX = 30;
     public static final String TEXTPROJECT = "textProject";
     private static final int SIZE = 14;
-    SharedPreferences sharedPreferences;
-    String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private Handler handler = new Handler();
+    private Runnable runnable;
+    private int scrollSpeedDelay = MAX;
+    private SettingsViewModel model;
 
     @BindView(R.id.text_preview)
     TextView previewText;
@@ -61,11 +57,6 @@ public class SettingsActivity extends AppCompatActivity {
     @BindView(R.id.edit_text)
     ImageView edit;
 
-    private TextProject textProject;
-    private Handler handler = new Handler();
-    private Runnable runnable;
-    private int scrollSpeedDelay = MAX;
-
     public static Intent newIntent(Context context, TextProject textProject) {
         Intent intent = new Intent(context, SettingsActivity.class);
         intent.putExtra(TEXTPROJECT, textProject);
@@ -73,15 +64,92 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onDestroy() {
+        handler.removeCallbacksAndMessages(null);
+        super.onDestroy();
+    }
+
+    @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
         ButterKnife.bind(this);
-        sharedPreferences = getSharedPreferences("blabla", Context.MODE_PRIVATE);
+
+        model = ViewModelProviders.of(this).get(SettingsViewModel.class);
         onNewIntent(getIntent());
-        setUpEditButton();
+        model.populateText();
+        model.text.observe(this, s -> previewText.setText(s));
+
+        model.textProject.observe(this, textProject -> setupUI(textProject));
+
         seekbarScrollingSpeed.setMax(MAX - 1);
-        populateText(textProject);
+        runnable = () -> {
+            scrollView.smoothScrollBy(0, 1);
+            handler.postDelayed(runnable, scrollSpeedDelay);
+        };
+        handler.postDelayed(runnable, scrollSpeedDelay);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_settings, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        model.textProject.setValue(intent.getParcelableExtra(TEXTPROJECT));
+        model.context = this;
+        super.onNewIntent(intent);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_save) {
+            model.saveSettings(this);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @OnClick({R.id.color_picker_text})
+    public void onTextColorClicked(View view) {
+        showColorPickerDialog(view, (envelope, fromUser) -> {
+            model.setTextColor("#" + envelope.getHexCode());
+            int color = envelope.getColor();
+            view.setBackgroundColor(color);
+            previewText.setTextColor(color);
+        });
+    }
+
+    private int getTextSizeByProgress(int progress) {
+        return progress + SIZE;
+    }
+
+    @OnClick({R.id.color_picker_background})
+    public void onBackgroundColorClicked(View view) {
+        showColorPickerDialog(view, (envelope, fromUser) -> {
+            model.setBackgroundColor("#" + envelope.getHexCode());
+            int color = envelope.getColor();
+            view.setBackgroundColor(color);
+            scrollView.setBackgroundColor(color);
+        });
+    }
+
+    private void setMirrorMode(View view, boolean mirrorMode) {
+        if (mirrorMode) {
+            view.setScaleX(-1);
+            view.setScaleY(1);
+        } else {
+            view.setScaleX(1);
+            view.setScaleY(1);
+        }
+    }
+
+    private void setupUI(TextProject textProject) {
+        setUpEditButton(textProject);
         previewText.setTextSize(getTextSizeByProgress(textProject.getTextSize()));
         seekbarTextSize.setProgress(textProject.getTextSize());
         scrollView.setBackgroundColor(Color.parseColor(textProject.getBackgroundColor()));
@@ -92,14 +160,6 @@ public class SettingsActivity extends AppCompatActivity {
         setMirrorMode(previewText, textProject.getMirrorMode());
         seekbarScrollingSpeed.setProgress(textProject.getScrollSpeed());
         scrollSpeedDelay = MAX - textProject.getScrollSpeed();
-
-
-        runnable = () -> {
-            scrollView.smoothScrollBy(0, 1);
-            handler.postDelayed(runnable, scrollSpeedDelay);
-        };
-        handler.postDelayed(runnable, scrollSpeedDelay);
-
         switchMirror.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (buttonView.getId() == R.id.switch_mirror_mode) {
                 setMirrorMode(previewText, isChecked);
@@ -122,56 +182,16 @@ public class SettingsActivity extends AppCompatActivity {
                 textProject.setScrollSpeed(progress);
             }
         });
-
-
     }
 
-    private void saveSettings() {
-        if (textProject.getTextId() == null) {
-            sharedPreferences.edit().putString(getString(R.string.preference_background_color), textProject.getBackgroundColor()).apply();
-            sharedPreferences.edit().putString(getString(R.string.preference_text_color), textProject.getTextColor()).apply();
-            sharedPreferences.edit().putInt(getString(R.string.preference_text_size), textProject.getTextSize()).apply();
-            sharedPreferences.edit().putInt(getString(R.string.preference_scroll_speed), textProject.getScrollSpeed()).apply();
-            sharedPreferences.edit().putBoolean(getString(R.string.preference_mirror_mode), textProject.getMirrorMode()).apply();
-        } else {
-            db.collection("users")
-                    .document(userId)
-                    .collection("textprojects")
-                    .document(textProject.getTextId())
-                    .update("backgroundColor", textProject.getBackgroundColor(),
-                            "textColor", textProject.getTextColor(),
-                            "textSize", textProject.getTextSize(),
-                            "scrollSpeed", textProject.getScrollSpeed(),
-                            "mirrorMode", textProject.getMirrorMode())
-                    .addOnSuccessListener(aVoid -> Timber.d("onSuccess: "))
-                    .addOnFailureListener(e -> Timber.d("onFailure: "));
+    private void setUpEditButton(TextProject textProject) {
+        if (textProject.getTextId() != null) {
+            edit.setVisibility(View.VISIBLE);
+            edit.setOnClickListener(v -> {
+                Intent intent = CreateTextActivity.newIntent(getApplicationContext(), textProject);
+                startActivity(intent);
+            });
         }
-    }
-
-    @Override
-    protected void onDestroy() {
-        handler.removeCallbacksAndMessages(null);
-        super.onDestroy();
-    }
-
-    @OnClick({R.id.color_picker_text})
-    public void onTextColorClicked(View view) {
-        showColorPickerDialog(view, (envelope, fromUser) -> {
-            textProject.setTextColor("#" + envelope.getHexCode());
-            int color = envelope.getColor();
-            view.setBackgroundColor(color);
-            previewText.setTextColor(color);
-        });
-    }
-
-    @OnClick({R.id.color_picker_background})
-    public void onBackgroundColorClicked(View view) {
-        showColorPickerDialog(view, (envelope, fromUser) -> {
-            textProject.setBackgroundColor("#" + envelope.getHexCode());
-            int color = envelope.getColor();
-            view.setBackgroundColor(color);
-            scrollView.setBackgroundColor(color);
-        });
     }
 
     private void showColorPickerDialog(View view, ColorEnvelopeListener listener) {
@@ -182,69 +202,6 @@ public class SettingsActivity extends AppCompatActivity {
                 .attachAlphaSlideBar(false)
                 .attachBrightnessSlideBar(true)
                 .show();
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        textProject = intent.getParcelableExtra(TEXTPROJECT);
-        super.onNewIntent(intent);
-    }
-
-    private int getTextSizeByProgress(int progress) {
-        return progress + SIZE;
-    }
-
-    private void setMirrorMode(View view, boolean mirrorMode) {
-        if (mirrorMode) {
-            view.setScaleX(-1);
-            view.setScaleY(1);
-        } else {
-            view.setScaleX(1);
-            view.setScaleY(1);
-        }
-    }
-
-    private void populateText(TextProject textProject) {
-        String id = textProject.getTextId();
-        if (id == null) {
-            previewText.setText(R.string.test);
-        } else {
-            FirebaseStorage storage = FirebaseStorage.getInstance();
-            StorageReference storageRef = storage.getReference();
-            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            StorageReference textRef = storageRef.child(userId).child(textProject.getTextReference());
-            textRef.getBytes(1024 * 1024).addOnSuccessListener(bytes -> {
-                String text = new String(bytes);
-                previewText.setText(text);
-            });
-        }
-    }
-
-    private void setUpEditButton() {
-        if (textProject.getTextId() != null) {
-            edit.setVisibility(View.VISIBLE);
-            edit.setOnClickListener(v -> {
-                Intent intent = CreateTextActivity.newIntent(getApplicationContext(), textProject);
-                startActivity(intent);
-            });
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_settings, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.action_save) {
-            saveSettings();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 }
 
