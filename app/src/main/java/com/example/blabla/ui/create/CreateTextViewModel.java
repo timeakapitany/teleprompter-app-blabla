@@ -8,14 +8,10 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.blabla.exception.InternetException;
 import com.example.blabla.model.TextProject;
+import com.example.blabla.repository.TextProjectRepository;
 import com.example.blabla.util.NetworkUtils;
 import com.example.blabla.util.Result;
 import com.google.firebase.Timestamp;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import java.util.Date;
 import java.util.UUID;
@@ -27,11 +23,9 @@ public class CreateTextViewModel extends ViewModel {
     MutableLiveData<TextProject> textProject = new MutableLiveData<>();
     MutableLiveData<Result<String>> text = new MutableLiveData<>();
     MutableLiveData<Result<TextProject>> saveResult = new MutableLiveData<>();
-    private FirebaseStorage storage = FirebaseStorage.getInstance();
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private StorageReference storageRef = storage.getReference();
-    private String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
     private TextLoadAsyncTask textLoadAsyncTask;
+    private TextProjectRepository repository = new TextProjectRepository();
 
     public CreateTextViewModel(TextProject textProject) {
         this.textProject.setValue(textProject);
@@ -54,18 +48,10 @@ public class CreateTextViewModel extends ViewModel {
             return;
         }
         if (textProject.getValue().getTextId() != null) {
-            storageRef.child(userId).child(textProject.getValue().getTextReference()).delete()
-                    .addOnFailureListener(e -> Timber.d("onFailure: "))
-                    .addOnSuccessListener(aVoid -> Timber.d("onSuccess: "));
+            repository.deleteDocumentOnFirebaseStorage(textProject.getValue().getTextReference());
         }
         String textID = UUID.randomUUID().toString();
-        StorageReference textRef = storageRef.child(userId).child(textID);
-        byte[] data = textToUpload.getBytes();
-        UploadTask uploadTask = textRef.putBytes(data);
-        uploadTask.addOnFailureListener(e -> {
-            Timber.d("onFailure: ");
-            saveResult.postValue(Result.error(e));
-        }).addOnSuccessListener(taskSnapshot -> {
+        repository.saveToStorage(textID, textToUpload, saveResult, taskSnapshot -> {
             Timber.d("onSuccess: ");
             saveToFirebaseFirestore(textID, title);
         });
@@ -83,26 +69,11 @@ public class CreateTextViewModel extends ViewModel {
         } else {
             documentId = project.getTextId();
         }
-        db.collection("users")
-                .document(userId)
-                .collection("textprojects")
-                .document(documentId)
-                .set(project)
-                .addOnFailureListener(e -> {
-                    Timber.d("onFailure: ");
-                    saveResult.postValue(Result.error(e));
-                })
-                .addOnSuccessListener(aVoid -> {
-                    Timber.d("onSuccess: ");
-                    saveResult.postValue(Result.success(project));
-                });
+        repository.saveToFirestore(documentId, project, saveResult);
     }
 
-    void populateText() {
-        StorageReference textRef = storageRef.child(userId).child(textProject.getValue().getTextReference());
-        textRef.getBytes(1024 * 1024).addOnSuccessListener(bytes -> {
-            text.postValue(Result.success(new String(bytes)));
-        }).addOnFailureListener(e -> text.postValue(Result.error(e)));
+    private void populateText() {
+        repository.populateText(textProject.getValue().getTextReference(), text);
     }
 
     void startNetworkCall(String url) {

@@ -113,7 +113,7 @@ public class SettingsActivity extends AppCompatActivity {
             public void onChanged(Result<TextProject> result) {
                 if (result.isSuccess()) {
                     progressBar.hide();
-                    Toast.makeText(SettingsActivity.this, R.string.save_successful, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SettingsActivity.this, R.string.save_successful, Toast.LENGTH_LONG).show();
                 } else {
                     String message;
                     if (result.getException() instanceof InternetException) {

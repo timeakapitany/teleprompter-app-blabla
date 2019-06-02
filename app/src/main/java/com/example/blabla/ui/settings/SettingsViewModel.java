@@ -9,18 +9,14 @@ import androidx.lifecycle.ViewModel;
 import com.example.blabla.R;
 import com.example.blabla.exception.InternetException;
 import com.example.blabla.model.TextProject;
+import com.example.blabla.repository.TextProjectRepository;
 import com.example.blabla.util.NetworkUtils;
 import com.example.blabla.util.Result;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-
-import timber.log.Timber;
 
 class SettingsViewModel extends ViewModel {
 
-    Context context;
+    private Context context;
+    private TextProjectRepository repository = new TextProjectRepository();
     MutableLiveData<TextProject> textProject = new MutableLiveData<>();
     MutableLiveData<Result<String>> text = new MutableLiveData<>();
     MutableLiveData<Result<TextProject>> saveResult = new MutableLiveData<>();
@@ -33,8 +29,6 @@ class SettingsViewModel extends ViewModel {
 
     void saveSettings(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences("blabla", Context.MODE_PRIVATE);
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         TextProject project = textProject.getValue();
         if (project != null) {
@@ -50,23 +44,7 @@ class SettingsViewModel extends ViewModel {
                     saveResult.postValue(Result.error(new InternetException()));
                     return;
                 }
-                db.collection("users")
-                        .document(userId)
-                        .collection("textprojects")
-                        .document(project.getTextId())
-                        .update("backgroundColor", project.getBackgroundColor(),
-                                "textColor", project.getTextColor(),
-                                "textSize", project.getTextSize(),
-                                "scrollSpeed", project.getScrollSpeed(),
-                                "mirrorMode", project.getMirrorMode())
-                        .addOnSuccessListener(aVoid -> {
-                            Timber.d("onSuccess: ");
-                            saveResult.postValue(Result.success(project));
-                        })
-                        .addOnFailureListener(e -> {
-                            Timber.d("onFailure: ");
-                            saveResult.postValue(Result.error(e));
-                        });
+                repository.saveToFirestore(project.getTextId(), project, saveResult);
             }
         }
     }
@@ -81,13 +59,7 @@ class SettingsViewModel extends ViewModel {
                 text.postValue(Result.error(new InternetException()));
                 return;
             }
-            FirebaseStorage storage = FirebaseStorage.getInstance();
-            StorageReference storageRef = storage.getReference();
-            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            StorageReference textRef = storageRef.child(userId).child(textProject.getTextReference());
-            textRef.getBytes(1024 * 1024).addOnSuccessListener(bytes -> {
-                text.postValue(Result.success(new String(bytes)));
-            }).addOnFailureListener(e -> text.postValue(Result.error(e)));
+            repository.populateText(textProject.getTextReference(), text);
         }
     }
 

@@ -1,8 +1,11 @@
 package com.example.blabla.model;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.example.blabla.R;
 import com.google.firebase.Timestamp;
 
 public class TextProject implements Parcelable {
@@ -133,4 +136,18 @@ public class TextProject implements Parcelable {
             return new TextProject[size];
         }
     };
+
+
+    public static TextProject createDummyTextProject(Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences("blabla", Context.MODE_PRIVATE);
+
+        TextProject dummy = new TextProject();
+        dummy.setTextId(null);
+        dummy.setBackgroundColor(sharedPreferences.getString(context.getString(R.string.preference_background_color), context.getString(R.string.default_background)));
+        dummy.setTextColor(sharedPreferences.getString(context.getString(R.string.preference_text_color), context.getString(R.string.default_text_color)));
+        dummy.setTextSize(sharedPreferences.getInt(context.getString(R.string.preference_text_size), context.getResources().getInteger(R.integer.default_text_size)));
+        dummy.setScrollSpeed(sharedPreferences.getInt(context.getString(R.string.preference_scroll_speed), context.getResources().getInteger(R.integer.default_scroll_speed)));
+        dummy.setMirrorMode(sharedPreferences.getBoolean(context.getString(R.string.preference_mirror_mode), context.getResources().getBoolean(R.bool.default_mirror)));
+        return dummy;
+    }
 }

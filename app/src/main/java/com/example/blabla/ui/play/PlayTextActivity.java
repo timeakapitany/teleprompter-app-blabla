@@ -24,9 +24,6 @@ import androidx.lifecycle.ViewModelProviders;
 import com.example.blabla.R;
 import com.example.blabla.model.TextProject;
 import com.example.blabla.util.SimpleSeekBarChangeListener;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.skydoves.colorpickerview.ColorPickerDialog;
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
 
@@ -50,7 +47,6 @@ public class PlayTextActivity extends AppCompatActivity {
     SwitchCompat switchMirror;
     @BindView(R.id.seekbar_text_size)
     SeekBar seekbarTextSize;
-
     @BindView(R.id.play_text)
     TextView playText;
     @BindView(R.id.seekbar_scrolling_speed)
@@ -64,7 +60,6 @@ public class PlayTextActivity extends AppCompatActivity {
     @BindView(R.id.controls)
     ConstraintLayout controls;
 
-
     public static Intent newIntent(Context context, TextProject textProject) {
         Intent intent = new Intent(context, PlayTextActivity.class);
         intent.putExtra(TEXTPROJECT, textProject);
@@ -76,20 +71,23 @@ public class PlayTextActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playtext);
         ButterKnife.bind(this);
-        model = ViewModelProviders.of(this).get(PlayTextViewModel.class);
-        model.textProject = getIntent().getParcelableExtra(TEXTPROJECT);
+        model = ViewModelProviders.of(this, new PlayTextViewModelFactory(getIntent().getParcelableExtra(TEXTPROJECT))).get(PlayTextViewModel.class);
+
+        model.text.observe(this, result -> {
+            if (result.isSuccess()) {
+                playText.setText(result.getData());
+            } else {
+                playText.setText("");
+            }
+        });
         sharedPreferences = getSharedPreferences("blabla", Context.MODE_PRIVATE);
         seekbarScrollingSpeed.setMax(MAX - 1);
         setupUI(model.textProject);
-
-        startScrolling(handler, scrollView, scrollSpeedDelay);
-
-
+        startScrolling(handler, scrollView);
     }
 
     @SuppressLint("ClickableViewAccessibility")
     private void setupUI(TextProject textProject) {
-        populateText(textProject);
         playText.setTextSize(getTextSizeByProgress(textProject.getTextSize()));
         seekbarTextSize.setProgress(textProject.getTextSize());
         scrollView.setVerticalScrollbarPosition(model.scrollPosition * scrollView.getHeight());
@@ -100,7 +98,7 @@ public class PlayTextActivity extends AppCompatActivity {
         switchMirror.setChecked(textProject.getMirrorMode());
         setMirrorMode(playText, textProject.getMirrorMode());
         seekbarScrollingSpeed.setProgress(textProject.getScrollSpeed());
-
+        scrollSpeedDelay = MAX - textProject.getScrollSpeed();
         switchMirror.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (buttonView.getId() == R.id.switch_mirror_mode) {
                 setMirrorMode(playText, isChecked);
@@ -129,10 +127,9 @@ public class PlayTextActivity extends AppCompatActivity {
                 runnable = null;
                 playControl.setImageDrawable(getDrawable(R.drawable.ic_play));
             } else {
-                startScrolling(handler, scrollView, scrollSpeedDelay);
+                startScrolling(handler, scrollView);
                 playControl.setImageDrawable(getDrawable(R.drawable.ic_pause));
             }
-
         });
 
         playText.setOnTouchListener(new View.OnTouchListener() {
@@ -149,7 +146,7 @@ public class PlayTextActivity extends AppCompatActivity {
                         runnable = null;
                         playControl.setImageDrawable(getDrawable(R.drawable.ic_play));
                     } else {
-                        startScrolling(handler, scrollView, scrollSpeedDelay);
+                        startScrolling(handler, scrollView);
                         playControl.setImageDrawable(getDrawable(R.drawable.ic_pause));
                     }
                     return true;
@@ -167,16 +164,14 @@ public class PlayTextActivity extends AppCompatActivity {
             });
 
             @Override
-
             public boolean onTouch(View v, MotionEvent event) {
                 gestureDetector.onTouchEvent(event);
                 return true;
             }
         });
-
     }
 
-    private void startScrolling(Handler handler, ScrollView scrollView, int scrollSpeedDelay) {
+    private void startScrolling(Handler handler, ScrollView scrollView) {
         runnable = () -> {
             scrollView.smoothScrollBy(0, 1);
             handler.postDelayed(runnable, scrollSpeedDelay);
@@ -221,7 +216,6 @@ public class PlayTextActivity extends AppCompatActivity {
                 .show();
     }
 
-
     private int getTextSizeByProgress(int progress) {
         return progress + SIZE;
     }
@@ -235,23 +229,5 @@ public class PlayTextActivity extends AppCompatActivity {
             view.setScaleY(1);
         }
     }
-
-    private void populateText(TextProject textProject) {
-        String id = textProject.getTextId();
-        if (id != null) {
-            FirebaseStorage storage = FirebaseStorage.getInstance();
-            StorageReference storageRef = storage.getReference();
-            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            StorageReference textRef = storageRef.child(userId).child(textProject.getTextReference());
-            textRef.getBytes(1024 * 1024).addOnSuccessListener(bytes -> {
-                String text = new String(bytes);
-                playText.setText(text);
-            });
-        } else {
-            playText.setText("");
-        }
-    }
-
-
 }
 

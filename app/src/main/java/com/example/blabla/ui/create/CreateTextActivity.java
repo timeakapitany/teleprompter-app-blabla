@@ -13,7 +13,6 @@ import android.widget.EditText;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.widget.ContentLoadingProgressBar;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.example.blabla.R;
@@ -21,7 +20,6 @@ import com.example.blabla.exception.InternetException;
 import com.example.blabla.model.TextProject;
 import com.example.blabla.ui.settings.SettingsActivity;
 import com.example.blabla.util.DialogUtil;
-import com.example.blabla.util.Result;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.BufferedReader;
@@ -81,40 +79,34 @@ public class CreateTextActivity extends AppCompatActivity {
             }
         });
 
-        model.textProject.observe(this, new Observer<TextProject>() {
-            @Override
-            public void onChanged(TextProject textProject) {
-                newText = textProject.getTextId() == null;
-                if (!newText) {
-                    textTitle.setText(textProject.getTextTitle());
-                    if (getSupportActionBar() != null) {
-                        getSupportActionBar().setTitle(getString(R.string.edit_text_title));
-                    }
+        model.textProject.observe(this, textProject -> {
+            newText = textProject.getTextId() == null;
+            if (!newText) {
+                textTitle.setText(textProject.getTextTitle());
+                if (getSupportActionBar() != null) {
+                    getSupportActionBar().setTitle(getString(R.string.edit_text_title));
                 }
             }
         });
 
-        model.saveResult.observe(this, new Observer<Result<TextProject>>() {
-            @Override
-            public void onChanged(Result<TextProject> result) {
-                if (result.isSuccess()) {
-                    progressBar.hide();
-                    if (!newText) {
-                        Intent intent = SettingsActivity.newIntent(getApplicationContext(), result.getData());
-                        startActivity(intent);
-                    }
-                    onBackPressed();
-                } else {
-                    String message;
-                    if (result.getException() instanceof InternetException) {
-                        message = getString(R.string.no_internet_error_message);
-                    } else {
-                        message = getString(R.string.error_message);
-                    }
-                    DialogUtil.createAlert(CreateTextActivity.this, message, null);
-                    progressBar.hide();
-                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        model.saveResult.observe(this, result -> {
+            if (result.isSuccess()) {
+                progressBar.hide();
+                if (!newText) {
+                    Intent intent = SettingsActivity.newIntent(getApplicationContext(), result.getData());
+                    startActivity(intent);
                 }
+                onBackPressed();
+            } else {
+                String message;
+                if (result.getException() instanceof InternetException) {
+                    message = getString(R.string.no_internet_error_message);
+                } else {
+                    message = getString(R.string.error_message);
+                }
+                DialogUtil.createAlert(CreateTextActivity.this, message, null);
+                progressBar.hide();
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
             }
         });
 
@@ -231,8 +223,4 @@ public class CreateTextActivity extends AppCompatActivity {
             return true;
         }
     }
-
-
-
-
 }
