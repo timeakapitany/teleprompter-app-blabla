@@ -3,7 +3,6 @@ package com.example.blabla.ui.create;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,7 +21,6 @@ import com.example.blabla.exception.InternetException;
 import com.example.blabla.model.TextProject;
 import com.example.blabla.ui.settings.SettingsActivity;
 import com.example.blabla.util.DialogUtil;
-import com.example.blabla.util.NetworkUtils;
 import com.example.blabla.util.Result;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -34,7 +32,6 @@ import java.net.URLDecoder;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import timber.log.Timber;
 
 public class CreateTextActivity extends AppCompatActivity {
 
@@ -59,7 +56,6 @@ public class CreateTextActivity extends AppCompatActivity {
     TextInputLayout filePathInput;
     @BindView(R.id.button_import)
     Button importButton;
-    private TextLoadAsyncTask textLoadAsyncTask;
     Boolean newText;
     private CreateTextViewModel model;
 
@@ -126,14 +122,6 @@ public class CreateTextActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
-        if (textLoadAsyncTask != null) {
-            textLoadAsyncTask.cancel(true);
-        }
-        super.onDestroy();
-    }
-
-    @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == RESULT_OK && requestCode == BROWSE_REQUEST) {
             Uri uri = data.getData();
@@ -190,7 +178,7 @@ public class CreateTextActivity extends AppCompatActivity {
             } else if (!url.endsWith(".txt")) {
                 filePathInput.setError(getResources().getString(R.string.required_field_txt));
             } else {
-                startNetworkCall(url);
+                model.startNetworkCall(url);
             }
         });
 
@@ -244,29 +232,7 @@ public class CreateTextActivity extends AppCompatActivity {
         }
     }
 
-    private void startNetworkCall(String url) {
-        textLoadAsyncTask = new TextLoadAsyncTask();
-        textLoadAsyncTask.execute(url);
-    }
-
-    class TextLoadAsyncTask extends AsyncTask<String, Void, String> {
-        private static final String TAG = "TextLoadAsyncTask";
 
 
-        @Override
-        protected String doInBackground(String... strings) {
-            Timber.d("doInBackground: %s", strings[0]);
-            String textFeed = NetworkUtils.downloadData(strings[0]);
-            return textFeed;
-        }
 
-        @Override
-        protected void onPostExecute(String text) {
-            super.onPostExecute(text);
-            if (text != null) {
-                textBody.setText(text);
-                Timber.d("onPostExecute: ");
-            }
-        }
-    }
 }

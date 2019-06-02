@@ -1,6 +1,7 @@
 package com.example.blabla.ui.create;
 
 import android.content.Context;
+import android.os.AsyncTask;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -30,12 +31,21 @@ public class CreateTextViewModel extends ViewModel {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private StorageReference storageRef = storage.getReference();
     private String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    private TextLoadAsyncTask textLoadAsyncTask;
 
     public CreateTextViewModel(TextProject textProject) {
         this.textProject.setValue(textProject);
         if (textProject.getTextId() != null) {
             populateText();
         }
+    }
+
+    @Override
+    protected void onCleared() {
+        if (textLoadAsyncTask != null) {
+            textLoadAsyncTask.cancel(true);
+        }
+        super.onCleared();
     }
 
     void saveToFirebaseStorage(String textToUpload, String title, Context context) {
@@ -94,4 +104,33 @@ public class CreateTextViewModel extends ViewModel {
             text.postValue(Result.success(new String(bytes)));
         }).addOnFailureListener(e -> text.postValue(Result.error(e)));
     }
+
+    void startNetworkCall(String url) {
+        textLoadAsyncTask = new TextLoadAsyncTask();
+        textLoadAsyncTask.execute(url);
+    }
+
+    class TextLoadAsyncTask extends AsyncTask<String, Void, String> {
+        private static final String TAG = "TextLoadAsyncTask";
+
+
+        @Override
+        protected String doInBackground(String... strings) {
+            Timber.d("doInBackground: %s", strings[0]);
+            String textFeed = NetworkUtils.downloadData(strings[0]);
+            return textFeed;
+        }
+
+        @Override
+        protected void onPostExecute(String text) {
+            super.onPostExecute(text);
+            if (text != null) {
+                CreateTextViewModel.this.text.postValue(Result.success(text));
+                Timber.d("onPostExecute: ");
+            } else {
+                CreateTextViewModel.this.text.postValue(Result.error(new Exception()));
+            }
+        }
+    }
+
 }
