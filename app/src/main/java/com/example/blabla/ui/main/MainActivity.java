@@ -9,9 +9,11 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
@@ -26,14 +28,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.blabla.R;
 import com.example.blabla.model.TextProject;
 import com.example.blabla.ui.create.CreateTextActivity;
-import com.example.blabla.ui.menudialog.BottomSheetDialog;
 import com.example.blabla.ui.play.PlayTextActivity;
 import com.example.blabla.ui.settings.SettingsActivity;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -45,7 +45,6 @@ import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -71,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     @BindView(R.id.fab)
     FloatingActionButton fab;
-    private BottomSheetDialog bottomSheetDialog;
 
 
     @Override
@@ -171,13 +169,8 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.addItemDecoration(decorator);
         textProjectAdapter = new TextProjectAdapter();
         textProjectAdapter.setOnTextProjectClickListener((textProject, view, position) -> {
-            bottomSheetDialog = new BottomSheetDialog(R.menu.menu_bottom_sheet);
-            bottomSheetDialog.setTitle(textProject.getTextTitle());
-            bottomSheetDialog.setOnClickListener(v -> {
-                handleBottomSheetMenuClick(textProject, v.getId(), position);
-                bottomSheetDialog.dismiss();
-            });
-            bottomSheetDialog.show(this.getSupportFragmentManager(), null);
+            showPopupMenu(textProject, view, position);
+
         });
         recyclerView.setAdapter(textProjectAdapter);
         ItemTouchHelper itemTouchHelper = new
@@ -185,7 +178,25 @@ public class MainActivity extends AppCompatActivity {
         itemTouchHelper.attachToRecyclerView(recyclerView);
     }
 
-    private void handleBottomSheetMenuClick(TextProject textProject, @IdRes int id, int position) {
+    private void showPopupMenu(TextProject project, View view, int position) {
+        PopupMenu popupMenu = new PopupMenu(this, view);
+        Menu menu = popupMenu.getMenu();
+        MenuInflater inflater = new MenuInflater(this);
+        inflater.inflate(R.menu.menu_bottom_sheet, menu);
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                handleMenuClick(project, item.getItemId(), position);
+                popupMenu.dismiss();
+                return true;
+            }
+        });
+
+        popupMenu.show();
+
+    }
+
+    private void handleMenuClick(TextProject textProject, @IdRes int id, int position) {
         Intent intent;
         switch (id) {
             case R.id.action_play:
@@ -201,23 +212,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private List<TextProject> getMockList(int size) {
-        List<TextProject> list = new ArrayList<>();
-        TextProject textProject;
-        for (int i = 0; i < size; i++) {
-            textProject = new TextProject();
-            textProject.setTextId(i + "");
-            textProject.setTextTitle("Test Text" + i);
-            textProject.setCreationDate(new Timestamp(new Date()));
-            textProject.setScrollSpeed(0);
-            textProject.setMirrorMode(true);
-            textProject.setTextSize(5);
-            textProject.setTextColor("#75a478");
-            textProject.setBackgroundColor("#ffa06d");
-            list.add(textProject);
-        }
-        return list;
-    }
 
     private TextProject createDummyTextProject() {
         TextProject dummy = new TextProject();
@@ -296,13 +290,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    protected void onStop() {
-        if (bottomSheetDialog != null) {
-            bottomSheetDialog.dismissAllowingStateLoss();
-        }
-        super.onStop();
-    }
 
     public class SwipeToEditDeleteCallback extends ItemTouchHelper.SimpleCallback {
 
