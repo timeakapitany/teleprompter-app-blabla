@@ -2,7 +2,6 @@ package com.example.blabla.ui.main;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -12,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 
@@ -54,23 +54,21 @@ import timber.log.Timber;
 public class MainActivity extends AppCompatActivity {
 
     private static final int RC_SIGN_IN = 11;
-    private static final String TAG = "tag";
     private final FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-    private TextProjectAdapter textProjectAdapter;
-    SharedPreferences sharedPreferences;
-    private ListenerRegistration registration;
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final FirebaseStorage storage = FirebaseStorage.getInstance();
     private final StorageReference storageRef = storage.getReference();
+    private TextProjectAdapter textProjectAdapter;
+    private ListenerRegistration registration;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
-
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     @BindView(R.id.fab)
     FloatingActionButton fab;
-
+    @BindView(R.id.login_button)
+    Button loginButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,34 +76,41 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         setSupportActionBar(toolbar);
-        sharedPreferences = getSharedPreferences("blabla", Context.MODE_PRIVATE);
         setupRecyclerView();
 
-        firebaseAuth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                if (firebaseAuth.getCurrentUser() == null) {
-                    if (registration != null) {
-                        registration.remove();
-                    }
-                    userSignIn();
-                } else {
-                    listenDatabaseChanges();
+        firebaseAuth.addAuthStateListener(firebaseAuth -> {
+            if (!isUserLoggedIn()) {
+                if (registration != null) {
+                    registration.remove();
                 }
+                invalidateOptionsMenu();
+                userSignIn();
+                fab.hide();
+                textProjectAdapter.updateList(new ArrayList<>());
+                loginButton.setVisibility(View.VISIBLE);
+            } else {
+                invalidateOptionsMenu();
+                listenDatabaseChanges();
+                fab.show();
+                loginButton.setVisibility(View.GONE);
             }
         });
 
         fab.setOnClickListener(view -> {
-            TextProject dummy = createDummyTextProject();
+            TextProject dummy = TextProject.createDummyTextProject(MainActivity.this);
             Intent intent = CreateTextActivity.newIntent(getApplicationContext(), dummy);
             startActivity(intent);
         });
 
+        loginButton.setOnClickListener(v -> userSignIn());
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+        if (!isUserLoggedIn()) {
+            return false;
+        }
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
@@ -115,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
-            TextProject dummy = createDummyTextProject();
+            TextProject dummy = TextProject.createDummyTextProject(this);
             Intent intent = SettingsActivity.newIntent(this, dummy);
             this.startActivity(intent);
             return true;
@@ -124,7 +129,6 @@ public class MainActivity extends AppCompatActivity {
             userSignOut();
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -148,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
         List<AuthUI.IdpConfig> providers = Arrays.asList(
                 new AuthUI.IdpConfig.EmailBuilder().build());
 
-        if (firebaseAuth.getCurrentUser() == null) {
+        if (!isUserLoggedIn()) {
             startActivityForResult(
                     AuthUI.getInstance()
                             .createSignInIntentBuilder()
@@ -156,6 +160,10 @@ public class MainActivity extends AppCompatActivity {
                             .build(),
                     RC_SIGN_IN);
         }
+    }
+
+    private boolean isUserLoggedIn() {
+        return firebaseAuth.getCurrentUser() != null;
     }
 
     private void userSignOut() {
@@ -168,10 +176,7 @@ public class MainActivity extends AppCompatActivity {
         decorator.setDrawable(ContextCompat.getDrawable(this, R.drawable.divider));
         recyclerView.addItemDecoration(decorator);
         textProjectAdapter = new TextProjectAdapter();
-        textProjectAdapter.setOnTextProjectClickListener((textProject, view, position) -> {
-            showPopupMenu(textProject, view, position);
-
-        });
+        textProjectAdapter.setOnTextProjectClickListener(this::showPopupMenu);
         recyclerView.setAdapter(textProjectAdapter);
         ItemTouchHelper itemTouchHelper = new
                 ItemTouchHelper(new SwipeToEditDeleteCallback());
@@ -183,17 +188,12 @@ public class MainActivity extends AppCompatActivity {
         Menu menu = popupMenu.getMenu();
         MenuInflater inflater = new MenuInflater(this);
         inflater.inflate(R.menu.menu_bottom_sheet, menu);
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                handleMenuClick(project, item.getItemId(), position);
-                popupMenu.dismiss();
-                return true;
-            }
+        popupMenu.setOnMenuItemClickListener(item -> {
+            handleMenuClick(project, item.getItemId(), position);
+            popupMenu.dismiss();
+            return true;
         });
-
         popupMenu.show();
-
     }
 
     private void handleMenuClick(TextProject textProject, @IdRes int id, int position) {
@@ -212,23 +212,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    private TextProject createDummyTextProject() {
-        TextProject dummy = new TextProject();
-        dummy.setTextId(null);
-        dummy.setBackgroundColor(sharedPreferences.getString(getString(R.string.preference_background_color), getString(R.string.default_background)));
-        dummy.setTextColor(sharedPreferences.getString(getString(R.string.preference_text_color), getString(R.string.default_text_color)));
-        dummy.setTextSize(sharedPreferences.getInt(getString(R.string.preference_text_size), getResources().getInteger(R.integer.default_text_size)));
-        dummy.setScrollSpeed(sharedPreferences.getInt(getString(R.string.preference_scroll_speed), getResources().getInteger(R.integer.default_scroll_speed)));
-        dummy.setMirrorMode(sharedPreferences.getBoolean(getString(R.string.preference_mirror_mode), getResources().getBoolean(R.bool.default_mirror)));
-        return dummy;
-    }
-
     private void deleteItem(int position) {
         textProjectAdapter.deleteItem(position);
         undoDeleteSnackbar();
     }
-
 
     private void undoDeleteSnackbar() {
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -258,7 +245,6 @@ public class MainActivity extends AppCompatActivity {
             snackbar.removeCallback(callback);
             textProjectAdapter.undoDeleteItem();
         });
-
         snackbar.addCallback(callback);
         snackbar.show();
     }
@@ -285,11 +271,8 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 Timber.d("Current data: null");
             }
-
         });
-
     }
-
 
     public class SwipeToEditDeleteCallback extends ItemTouchHelper.SimpleCallback {
 
@@ -297,7 +280,6 @@ public class MainActivity extends AppCompatActivity {
         private final Drawable editIcon;
         private final ColorDrawable deleteBackground;
         private final ColorDrawable editBackground;
-
 
         SwipeToEditDeleteCallback() {
             super(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
@@ -322,7 +304,6 @@ public class MainActivity extends AppCompatActivity {
                 recyclerView.getContext().startActivity(intent);
             }
         }
-
 
         @Override
         public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
@@ -350,8 +331,6 @@ public class MainActivity extends AppCompatActivity {
                 deleteIcon.draw(c);
             }
             super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
-
-
         }
 
         @Override
@@ -360,5 +339,4 @@ public class MainActivity extends AppCompatActivity {
             viewHolder.itemView.setTranslationX(0f);
         }
     }
-
 }
