@@ -42,7 +42,6 @@ Pellentesque habitant morbi tristique senectus. Massa sed elementum tempus egest
     <string name="clear_all">Clear All</string>
     <string name="title_hint">Title</string>
     <string name="appwidget_text">BlaBla</string>
-    <string name="add_widget">Add widget</string>
     <string name="button_import">Import</string>
     <string name="enter_url">Enter URL of .txt file</string>
     <string name="or">OR</string>
@@ -54,4 +53,8 @@ Pellentesque habitant morbi tristique senectus. Massa sed elementum tempus egest
     <string name="retry">Retry</string>
     <string name="save_successful">Save successful</string>
     <string name="login">Login</string>
+    <string name="cd_play_pause">play/pause button</string>
+    <string name="cd_edit_text">edit text</string>
+    <string name="cd_create_new_project">create new project</string>
+    <string name="cd_popup_menu">open menu for item</string>
 </resources>

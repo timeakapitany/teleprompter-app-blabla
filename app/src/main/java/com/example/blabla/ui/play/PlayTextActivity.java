@@ -3,7 +3,6 @@ package com.example.blabla.ui.play;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -32,14 +31,13 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class PlayTextActivity extends AppCompatActivity {
-    public static final String TEXTPROJECT = "textProject";
-    public static final int MAX = 30;
+    private static final String TEXTPROJECT = "textProject";
+    private static final int MAX = 30;
     private static final int SIZE = 14;
-    private Handler handler = new Handler();
+    private final Handler handler = new Handler();
     private Runnable runnable;
     private int scrollSpeedDelay = MAX;
     private PlayTextViewModel model;
-    SharedPreferences sharedPreferences;
 
     @BindView(R.id.scrollview_play_text)
     ScrollView scrollView;
@@ -80,7 +78,6 @@ public class PlayTextActivity extends AppCompatActivity {
                 playText.setText("");
             }
         });
-        sharedPreferences = getSharedPreferences("blabla", Context.MODE_PRIVATE);
         seekbarScrollingSpeed.setMax(MAX - 1);
         setupUI(model.textProject);
         startScrolling(handler, scrollView);
@@ -133,7 +130,7 @@ public class PlayTextActivity extends AppCompatActivity {
         });
 
         playText.setOnTouchListener(new View.OnTouchListener() {
-            private GestureDetector gestureDetector = new GestureDetector(getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
+            private final GestureDetector gestureDetector = new GestureDetector(getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
                 @Override
                 public boolean onDown(MotionEvent e) {
                     return true;
@@ -188,7 +185,7 @@ public class PlayTextActivity extends AppCompatActivity {
 
     @OnClick({R.id.color_picker_text})
     public void onTextColorClicked(View view) {
-        showColorPickerDialog(view, (envelope, fromUser) -> {
+        showColorPickerDialog((envelope, fromUser) -> {
             model.textProject.setTextColor("#" + envelope.getHexCode());
             int color = envelope.getColor();
             view.setBackgroundColor(color);
@@ -198,7 +195,7 @@ public class PlayTextActivity extends AppCompatActivity {
 
     @OnClick({R.id.color_picker_background})
     public void onBackgroundColorClicked(View view) {
-        showColorPickerDialog(view, (envelope, fromUser) -> {
+        showColorPickerDialog((envelope, fromUser) -> {
             model.textProject.setBackgroundColor("#" + envelope.getHexCode());
             int color = envelope.getColor();
             view.setBackgroundColor(color);
@@ -206,7 +203,7 @@ public class PlayTextActivity extends AppCompatActivity {
         });
     }
 
-    private void showColorPickerDialog(View view, ColorEnvelopeListener listener) {
+    private void showColorPickerDialog(ColorEnvelopeListener listener) {
         new ColorPickerDialog.Builder(this)
                 .setTitle(R.string.title_color_picker)
                 .setPositiveButton(R.string.select, listener)

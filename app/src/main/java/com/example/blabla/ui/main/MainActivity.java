@@ -1,6 +1,7 @@
 package com.example.blabla.ui.main;
 
-import android.content.Context;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -30,8 +31,9 @@ import com.example.blabla.model.TextProject;
 import com.example.blabla.ui.create.CreateTextActivity;
 import com.example.blabla.ui.play.PlayTextActivity;
 import com.example.blabla.ui.settings.SettingsActivity;
+import com.example.blabla.util.SharedPrefUtil;
+import com.example.blabla.widget.CreateTextAppWidget;
 import com.firebase.ui.auth.AuthUI;
-import com.firebase.ui.auth.IdpResponse;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
@@ -44,7 +46,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
@@ -59,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     private final StorageReference storageRef = storage.getReference();
     private TextProjectAdapter textProjectAdapter;
     private ListenerRegistration registration;
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -94,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
                 fab.show();
                 loginButton.setVisibility(View.GONE);
             }
+            updateWidgets();
         });
 
         fab.setOnClickListener(view -> {
@@ -137,19 +140,18 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == RC_SIGN_IN) {
-            IdpResponse response = IdpResponse.fromResultIntent(data);
-
             if (resultCode == RESULT_OK) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
-                getSharedPreferences("blabla", Context.MODE_PRIVATE).edit().putString("UserId", user.getUid()).apply();
+                SharedPrefUtil.getSharedPref(this).edit()
+                        .putString("UserId", user.getUid()).apply();
             } else {
-                //TODO
+                Timber.d("login cancelled");
             }
         }
     }
 
     private void userSignIn() {
-        List<AuthUI.IdpConfig> providers = Arrays.asList(
+        List<AuthUI.IdpConfig> providers = Collections.singletonList(
                 new AuthUI.IdpConfig.EmailBuilder().build());
 
         if (!isUserLoggedIn()) {
@@ -187,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
         PopupMenu popupMenu = new PopupMenu(this, view);
         Menu menu = popupMenu.getMenu();
         MenuInflater inflater = new MenuInflater(this);
-        inflater.inflate(R.menu.menu_bottom_sheet, menu);
+        inflater.inflate(R.menu.menu_popup, menu);
         popupMenu.setOnMenuItemClickListener(item -> {
             handleMenuClick(project, item.getItemId(), position);
             popupMenu.dismiss();
@@ -252,7 +254,11 @@ public class MainActivity extends AppCompatActivity {
     private void listenDatabaseChanges() {
         String userId = firebaseAuth.getCurrentUser().getUid();
 
-        final Query collectionReference = db.collection("users").document(userId).collection("textprojects").orderBy("creationDate", Query.Direction.DESCENDING);
+        final Query collectionReference = db
+                .collection("users")
+                .document(userId)
+                .collection("textprojects")
+                .orderBy("creationDate", Query.Direction.DESCENDING);
 
         registration = collectionReference.addSnapshotListener((queryDocumentSnapshots, e) -> {
             List<TextProject> list = new ArrayList<>();
@@ -274,7 +280,15 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public class SwipeToEditDeleteCallback extends ItemTouchHelper.SimpleCallback {
+    private void updateWidgets() {
+        Intent intent = new Intent(this, CreateTextAppWidget.class);
+        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        int[] ids = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), CreateTextAppWidget.class));
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+        sendBroadcast(intent);
+    }
+
+    class SwipeToEditDeleteCallback extends ItemTouchHelper.SimpleCallback {
 
         private final Drawable deleteIcon;
         private final Drawable editIcon;
@@ -302,6 +316,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 Intent intent = SettingsActivity.newIntent(recyclerView.getContext(), textProjectAdapter.getTextProject(position));
                 recyclerView.getContext().startActivity(intent);
+                textProjectAdapter.notifyItemChanged(position);
             }
         }
 
@@ -331,12 +346,6 @@ public class MainActivity extends AppCompatActivity {
                 deleteIcon.draw(c);
             }
             super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
-        }
-
-        @Override
-        public void clearView(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
-            super.clearView(recyclerView, viewHolder);
-            viewHolder.itemView.setTranslationX(0f);
         }
     }
 }

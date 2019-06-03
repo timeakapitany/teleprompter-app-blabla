@@ -26,6 +26,7 @@
                 android:layout_height="wrap_content"
                 android:paddingStart="@dimen/spacing_default"
                 android:paddingTop="@dimen/spacing_default"
+                android:paddingEnd="@dimen/spacing_default"
                 android:text="@string/title_text_color"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -36,6 +37,7 @@
                 android:layout_height="wrap_content"
                 android:paddingStart="@dimen/spacing_default"
                 android:paddingTop="@dimen/spacing_default"
+                android:paddingEnd="@dimen/spacing_default"
                 android:text="@string/title_background_color"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/color_picker_text_border" />
@@ -46,6 +48,7 @@
                 android:layout_height="wrap_content"
                 android:paddingStart="@dimen/spacing_default"
                 android:paddingTop="@dimen/spacing_default"
+                android:paddingEnd="@dimen/spacing_default"
                 android:text="@string/title_text_size"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/color_picker_background_border" />
@@ -56,6 +59,7 @@
                 android:layout_height="wrap_content"
                 android:paddingStart="@dimen/spacing_default"
                 android:paddingTop="@dimen/spacing_default"
+                android:paddingEnd="@dimen/spacing_default"
                 android:text="@string/title_scrolling_speed"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/seekbar_text_size" />
@@ -66,6 +70,7 @@
                 android:layout_height="wrap_content"
                 android:paddingStart="@dimen/spacing_default"
                 android:paddingTop="@dimen/spacing_default"
+                android:paddingEnd="@dimen/spacing_default"
                 android:text="@string/title_mirror_mode"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/seekbar_scrolling_speed" />
@@ -165,6 +170,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/spacing_default"
             android:background="?selectableItemBackground"
+            android:contentDescription="@string/cd_edit_text"
             android:src="@drawable/ic_edit"
             android:tint="?attr/colorControlNormal"
             android:visibility="gone"

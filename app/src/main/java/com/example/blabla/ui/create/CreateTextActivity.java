@@ -34,7 +34,7 @@ import butterknife.ButterKnife;
 public class CreateTextActivity extends AppCompatActivity {
 
     private static final int BROWSE_REQUEST = 2;
-    public static final String TEXTPROJECT = "textProject";
+    private static final String TEXTPROJECT = "textProject";
 
     @BindView(R.id.file_path)
     EditText filePath;
@@ -54,7 +54,7 @@ public class CreateTextActivity extends AppCompatActivity {
     TextInputLayout filePathInput;
     @BindView(R.id.button_import)
     Button importButton;
-    Boolean newText;
+    private Boolean newText;
     private CreateTextViewModel model;
 
     public static Intent newIntent(Context context, TextProject textProject) {
@@ -113,6 +113,7 @@ public class CreateTextActivity extends AppCompatActivity {
         setListeners();
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == RESULT_OK && requestCode == BROWSE_REQUEST) {

@@ -6,13 +6,14 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.blabla.model.TextProject;
 
-public class CreateTextViewModelFactory extends ViewModelProvider.NewInstanceFactory {
-    TextProject textProject;
+class CreateTextViewModelFactory extends ViewModelProvider.NewInstanceFactory {
+    final TextProject textProject;
 
     public CreateTextViewModelFactory(TextProject textProject) {
         this.textProject = textProject;
     }
 
+    @SuppressWarnings("unchecked")
     @NonNull
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {

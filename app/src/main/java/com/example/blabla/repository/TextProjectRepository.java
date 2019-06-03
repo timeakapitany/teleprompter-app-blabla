@@ -15,10 +15,10 @@ import timber.log.Timber;
 
 public class TextProjectRepository {
 
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-    private FirebaseStorage storage = FirebaseStorage.getInstance();
-    private StorageReference storageRef = storage.getReference();
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    private final FirebaseStorage storage = FirebaseStorage.getInstance();
+    private final StorageReference storageRef = storage.getReference();
 
     public void saveToFirestore(String documentId, TextProject project, MutableLiveData<Result<TextProject>> resultLiveData) {
         db.collection("users")
@@ -51,9 +51,9 @@ public class TextProjectRepository {
 
     public void populateText(String documentReference, MutableLiveData<Result<String>> resultLiveData) {
         StorageReference textRef = storageRef.child(userId).child(documentReference);
-        textRef.getBytes(1024 * 1024).addOnSuccessListener(bytes -> {
-            resultLiveData.postValue(Result.success(new String(bytes)));
-        }).addOnFailureListener(e -> resultLiveData.postValue(Result.error(e)));
+        textRef.getBytes(1024 * 1024)
+                .addOnSuccessListener(bytes -> resultLiveData.postValue(Result.success(new String(bytes))))
+                .addOnFailureListener(e -> resultLiveData.postValue(Result.error(e)));
     }
 
     public void deleteDocumentOnFirebaseStorage(String textReference) {

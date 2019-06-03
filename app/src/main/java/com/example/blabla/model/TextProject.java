@@ -6,6 +6,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.example.blabla.R;
+import com.example.blabla.util.SharedPrefUtil;
 import com.google.firebase.Timestamp;
 
 public class TextProject implements Parcelable {
@@ -139,7 +140,7 @@ public class TextProject implements Parcelable {
 
 
     public static TextProject createDummyTextProject(Context context) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences("blabla", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = SharedPrefUtil.getSharedPref(context);
 
         TextProject dummy = new TextProject();
         dummy.setTextId(null);

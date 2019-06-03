@@ -49,6 +49,7 @@
             android:src="@drawable/ic_pause"
             app:layout_constraintBottom_toTopOf="@id/title_text_size"
             app:layout_constraintStart_toStartOf="parent"
+            android:contentDescription="@string/cd_play_pause"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView

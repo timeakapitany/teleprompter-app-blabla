@@ -7,12 +7,12 @@ import com.example.blabla.model.TextProject;
 import com.example.blabla.repository.TextProjectRepository;
 import com.example.blabla.util.Result;
 
-public class PlayTextViewModel extends ViewModel {
+class PlayTextViewModel extends ViewModel {
 
-    TextProject textProject;
+    final TextProject textProject;
     int scrollPosition;
-    MutableLiveData<Result<String>> text = new MutableLiveData<>();
-    private TextProjectRepository repository = new TextProjectRepository();
+    final MutableLiveData<Result<String>> text = new MutableLiveData<>();
+    private final TextProjectRepository repository = new TextProjectRepository();
 
     public PlayTextViewModel(TextProject textProject) {
         this.textProject = textProject;

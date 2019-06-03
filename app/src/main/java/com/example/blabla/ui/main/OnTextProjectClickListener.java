@@ -4,7 +4,7 @@ import android.view.View;
 
 import com.example.blabla.model.TextProject;
 
-public interface OnTextProjectClickListener {
+interface OnTextProjectClickListener {
 
     void onTextProjectClicked(TextProject textProject, View view, int position);
 }

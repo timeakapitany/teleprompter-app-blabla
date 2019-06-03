@@ -9,12 +9,11 @@
         android:layout_height="wrap_content">
 
         <TextView
-            android:id="@+id/title_import"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="@dimen/spacing_default"
             android:text="@string/import_file"
-            android:textSize="16dp"
+            android:textSize="16sp"
             app:layout_constraintBaseline_toBaselineOf="@+id/button_browse"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -38,7 +37,6 @@
             app:layout_constraintTop_toBottomOf="@id/button_browse" />
 
         <TextView
-            android:id="@+id/text_or"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="@dimen/spacing_default"
@@ -88,7 +86,6 @@
             app:layout_constraintTop_toBottomOf="@id/file_path_layout" />
 
         <TextView
-            android:id="@+id/text_or2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="?android:windowBackground"

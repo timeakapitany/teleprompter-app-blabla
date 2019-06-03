@@ -26,6 +26,7 @@
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/scrollview_text_preview"
         app:layout_constraintEnd_toEndOf="parent"
+        android:contentDescription="@string/cd_edit_text"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ScrollView

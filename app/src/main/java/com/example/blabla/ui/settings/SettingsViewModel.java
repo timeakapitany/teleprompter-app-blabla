@@ -12,14 +12,15 @@ import com.example.blabla.model.TextProject;
 import com.example.blabla.repository.TextProjectRepository;
 import com.example.blabla.util.NetworkUtils;
 import com.example.blabla.util.Result;
+import com.example.blabla.util.SharedPrefUtil;
 
 class SettingsViewModel extends ViewModel {
 
-    private Context context;
-    private TextProjectRepository repository = new TextProjectRepository();
-    MutableLiveData<TextProject> textProject = new MutableLiveData<>();
-    MutableLiveData<Result<String>> text = new MutableLiveData<>();
-    MutableLiveData<Result<TextProject>> saveResult = new MutableLiveData<>();
+    final MutableLiveData<TextProject> textProject = new MutableLiveData<>();
+    final MutableLiveData<Result<String>> text = new MutableLiveData<>();
+    final MutableLiveData<Result<TextProject>> saveResult = new MutableLiveData<>();
+    private final Context context;
+    private final TextProjectRepository repository = new TextProjectRepository();
 
     public SettingsViewModel(TextProject textProject, Context context) {
         this.textProject.setValue(textProject);
@@ -28,7 +29,7 @@ class SettingsViewModel extends ViewModel {
     }
 
     void saveSettings(Context context) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences("blabla", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = SharedPrefUtil.getSharedPref(context);
 
         TextProject project = textProject.getValue();
         if (project != null) {

@@ -6,10 +6,10 @@ import com.example.blabla.model.TextProject;
 
 import java.util.List;
 
-public class TextProjectDiffCallback extends DiffUtil.Callback {
+class TextProjectDiffCallback extends DiffUtil.Callback {
 
-    private List<TextProject> oldItems;
-    private List<TextProject> newItems;
+    private final List<TextProject> oldItems;
+    private final List<TextProject> newItems;
 
     public TextProjectDiffCallback(List<TextProject> oldItems, List<TextProject> newItems) {
         this.oldItems = oldItems;

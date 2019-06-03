@@ -1,5 +1,6 @@
 package com.example.blabla.ui.create;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
 
@@ -18,14 +19,14 @@ import java.util.UUID;
 
 import timber.log.Timber;
 
-public class CreateTextViewModel extends ViewModel {
+class CreateTextViewModel extends ViewModel {
 
-    MutableLiveData<TextProject> textProject = new MutableLiveData<>();
-    MutableLiveData<Result<String>> text = new MutableLiveData<>();
-    MutableLiveData<Result<TextProject>> saveResult = new MutableLiveData<>();
+    final MutableLiveData<TextProject> textProject = new MutableLiveData<>();
+    final MutableLiveData<Result<String>> text = new MutableLiveData<>();
+    final MutableLiveData<Result<TextProject>> saveResult = new MutableLiveData<>();
 
     private TextLoadAsyncTask textLoadAsyncTask;
-    private TextProjectRepository repository = new TextProjectRepository();
+    private final TextProjectRepository repository = new TextProjectRepository();
 
     public CreateTextViewModel(TextProject textProject) {
         this.textProject.setValue(textProject);
@@ -81,15 +82,13 @@ public class CreateTextViewModel extends ViewModel {
         textLoadAsyncTask.execute(url);
     }
 
+    @SuppressLint("StaticFieldLeak")
     class TextLoadAsyncTask extends AsyncTask<String, Void, String> {
-        private static final String TAG = "TextLoadAsyncTask";
-
 
         @Override
         protected String doInBackground(String... strings) {
             Timber.d("doInBackground: %s", strings[0]);
-            String textFeed = NetworkUtils.downloadData(strings[0]);
-            return textFeed;
+            return NetworkUtils.downloadData(strings[0]);
         }
 
         @Override

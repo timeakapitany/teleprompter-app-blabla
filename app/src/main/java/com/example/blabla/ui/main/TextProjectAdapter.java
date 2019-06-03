@@ -17,6 +17,7 @@ import com.example.blabla.ui.play.PlayTextActivity;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 class TextProjectAdapter extends RecyclerView.Adapter<TextProjectViewHolder> {
 
@@ -24,7 +25,7 @@ class TextProjectAdapter extends RecyclerView.Adapter<TextProjectViewHolder> {
     private TextProject deletedItem;
     private OnTextProjectClickListener onTextProjectClickListener;
     private List<TextProject> items = new ArrayList<>();
-    SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-YYYY");
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-YYYY", Locale.getDefault());
 
     public void setOnTextProjectClickListener(OnTextProjectClickListener onTextProjectClickListener) {
         this.onTextProjectClickListener = onTextProjectClickListener;
@@ -53,12 +54,7 @@ class TextProjectAdapter extends RecyclerView.Adapter<TextProjectViewHolder> {
             context.startActivity(intent);
         });
 
-        holder.more.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onTextProjectClickListener.onTextProjectClicked(item, v, holder.getAdapterPosition());
-            }
-        });
+        holder.more.setOnClickListener(v -> onTextProjectClickListener.onTextProjectClicked(item, v, holder.getAdapterPosition()));
     }
 
     private TextProject getItem(int position) {
